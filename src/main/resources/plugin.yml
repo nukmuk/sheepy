@@ -1,0 +1,6 @@
+name: Sheepy
+version: '${version}'
+main: org.example2.Sheepy.Sheepy
+api-version: '1.20'
+commands:
+  test:
