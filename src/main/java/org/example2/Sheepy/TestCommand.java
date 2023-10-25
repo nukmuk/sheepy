@@ -3,6 +3,7 @@ package org.example2.Sheepy;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextColor;
 import org.bukkit.*;
+import org.bukkit.command.BlockCommandSender;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -20,21 +21,32 @@ public class TestCommand implements CommandExecutor {
 
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull org.bukkit.command.Command command, @NotNull String label, @NotNull String[] args) {
-        if (!(sender instanceof Player player)) {
-            sender.sendMessage(ChatColor.RED + "only players can use this command");
-            return true;
-        }
+//        if (!(sender instanceof Player) && !(sender instanceof BlockCommandSender)) {
+//            sender.sendMessage(ChatColor.RED + "only players can use this command - " + sender.getClass());
+//            return true;
+//        }
 
-        World world = player.getWorld();
+
+        // create getLocation function
+
+
+        final Location loc = getLocation(sender);
+
+        assert loc != null;
+        World world = loc.getWorld();
 
         Plugin plugin = Sheepy.getPlugin(Sheepy.class);
         List<List<float[]>> anim = args.length > 0 ? anims.get(args[0]) : anims.entrySet().iterator().next().getValue();
 
-        player.sendMessage("anim loaded " + anim.size() + " frames");
+        sender.sendMessage("playing " + anim.size() + " frames");
 
-        BukkitTask task = new BukkitRunnable() {
+        // cancel all tasks
+        for (BukkitTask task : Bukkit.getScheduler().getPendingTasks()) {
+            task.cancel();
+        }
+
+        new BukkitRunnable() {
             int count = 0;
-            final Location loc = player.getTargetBlock(null, 100).getLocation().add(0,15,0);
 
             @Override
             public void run() {
@@ -70,7 +82,7 @@ public class TestCommand implements CommandExecutor {
                     world.spawnParticle(Particle.REDSTONE, pos.toLocation(world), 1, 0, 0, 0, dustOptions);
                 }
 
-                player.sendMessage("" + count);
+                sender.sendMessage("" + count);
                 count++;
             }
         }.runTaskTimer(plugin, 0L, 1L);
@@ -82,5 +94,14 @@ public class TestCommand implements CommandExecutor {
         sender.sendMessage(msg);
 
         return false;
+    }
+
+    private Location getLocation(CommandSender sender) {
+        if (sender instanceof Player player) {
+            return player.getTargetBlock(null, 100).getLocation().add(0, 15, 0);
+        } else if (sender instanceof BlockCommandSender blockCommandSender) {
+            return blockCommandSender.getBlock().getLocation().add(0.5, 15, 0.5);
+        }
+        return null;
     }
 }

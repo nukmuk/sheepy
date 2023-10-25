@@ -18,10 +18,14 @@ public final class Sheepy extends JavaPlugin {
         // get plugin data folder
         File[] animFolders = getDataFolder().listFiles();
 
-        assert animFolders != null;
-        for (File folder : animFolders) {
-            anims.put("len", ModelLoader.loadAnim(folder.getName()));
-        }
+
+        // load all animations
+//        assert animFolders != null;
+//        for (File folder : animFolders) {
+//            anims.put(folder.getName(), AnimLoader.loadAnim(folder.getName()));
+//        }
+//        anims.put("len", AnimLoader.loadAnim("len"));joo
+        anims.put("test", AnimLoader.loadAnimSingleFile("test.csv"));
         getLogger().info("loaded " + anims.size() + " anims");
     }
 
