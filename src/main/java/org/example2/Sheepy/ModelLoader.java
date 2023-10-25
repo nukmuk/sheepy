@@ -22,9 +22,9 @@ public class ModelLoader {
         File[] files = animFolder.listFiles();
 
         // create list of frames
-        plugin.getLogger().info("loading anim start");
+        plugin.getLogger().info("loading anim " + folderName);
         List<List<float[]>> frames = new ArrayList<>();
-        plugin.getLogger().info("loading anim" + files.length + " frames");
+        plugin.getLogger().info("loaded " + files.length + " frames");
 
         // loop over files
         for (File file : files) {
@@ -70,7 +70,8 @@ public class ModelLoader {
                 float r = Float.parseFloat(values[3]) * 255;
                 float g = Float.parseFloat(values[4]) * 255;
                 float b = Float.parseFloat(values[5]) * 255;
-                float s = Float.parseFloat(values[6]);
+//                float s = Float.parseFloat(values[6]);
+                float s = 1.0f;
 
                 // add particle to particles
                 float[] particle = {x, y, z, r, g, b, s};

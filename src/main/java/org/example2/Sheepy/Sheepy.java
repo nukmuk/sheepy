@@ -2,9 +2,11 @@ package org.example2.Sheepy;
 
 import org.bukkit.plugin.java.JavaPlugin;
 
+import java.io.File;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 public final class Sheepy extends JavaPlugin {
 
@@ -12,9 +14,15 @@ public final class Sheepy extends JavaPlugin {
 
     @Override
     public void onEnable() {
-        getCommand("test").setExecutor(new TestCommand());
-        anims.put("len", ModelLoader.loadAnim("len"));
-//        getLogger().info("models loaded " + anims.size() + " anims");
+        Objects.requireNonNull(getCommand("test")).setExecutor(new TestCommand());
+        // get plugin data folder
+        File[] animFolders = getDataFolder().listFiles();
+
+        assert animFolders != null;
+        for (File folder : animFolders) {
+            anims.put("len", ModelLoader.loadAnim(folder.getName()));
+        }
+        getLogger().info("loaded " + anims.size() + " anims");
     }
 
     @Override

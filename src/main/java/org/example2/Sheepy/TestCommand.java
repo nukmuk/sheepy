@@ -9,6 +9,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
+import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
@@ -27,13 +28,13 @@ public class TestCommand implements CommandExecutor {
         World world = player.getWorld();
 
         Plugin plugin = Sheepy.getPlugin(Sheepy.class);
-        List<List<float[]>> anim = anims.get("len");
+        List<List<float[]>> anim = args.length > 0 ? anims.get(args[0]) : anims.entrySet().iterator().next().getValue();
 
         player.sendMessage("anim loaded " + anim.size() + " frames");
 
         BukkitTask task = new BukkitRunnable() {
             int count = 0;
-            final Location loc = player.getLocation();
+            final Location loc = player.getTargetBlock(null, 100).getLocation().add(0,15,0);
 
             @Override
             public void run() {
@@ -64,7 +65,9 @@ public class TestCommand implements CommandExecutor {
                     float pscale = args.length > 1 ? Float.parseFloat(args[1]) : 1f;
                     Particle.DustOptions dustOptions = new Particle.DustOptions(color, pscale);
 
-                    world.spawnParticle(Particle.REDSTONE, loc.clone().add(point[0], point[1] + 10, point[2]), 1, 0, 0, 0, dustOptions);
+                    Vector pos = loc.toVector().add(new Vector(point[0], point[1], point[2]));
+
+                    world.spawnParticle(Particle.REDSTONE, pos.toLocation(world), 1, 0, 0, 0, dustOptions);
                 }
 
                 player.sendMessage("" + count);
