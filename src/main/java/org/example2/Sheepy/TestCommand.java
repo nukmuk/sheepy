@@ -9,15 +9,11 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
-import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.lang.reflect.Array;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
+
+import static org.example2.Sheepy.Sheepy.anims;
 
 public class TestCommand implements CommandExecutor {
 
@@ -28,13 +24,12 @@ public class TestCommand implements CommandExecutor {
             return true;
         }
 
-        List<List<float[]>> models = Sheepy.models;
-
         World world = player.getWorld();
 
         Plugin plugin = Sheepy.getPlugin(Sheepy.class);
+        List<List<float[]>> anim = anims.get("len");
 
-        player.sendMessage("model loaded " + models.get(0).size() + " particles");
+        player.sendMessage("anim loaded " + anim.size() + " frames");
 
         BukkitTask task = new BukkitRunnable() {
             int count = 0;
@@ -42,7 +37,7 @@ public class TestCommand implements CommandExecutor {
 
             @Override
             public void run() {
-                if (count >= 100) {
+                if (count >= anim.size() - 1) {
                     this.cancel();
                 }
 
@@ -62,21 +57,19 @@ public class TestCommand implements CommandExecutor {
                  */
 
                 // loop over particles in model
-                List<float[]> model = models.get(count % models.size());
-                    for (float[] point : model) {
+                List<float[]> frame = anim.get(count);
+                for (float[] point : frame) {
 
-                        Color color = Color.fromRGB((int) point[3], (int) point[4], (int) point[5]);
-                        float pscale = args.length > 0 ? Float.parseFloat(args[0]) : 1f;
-                        Particle.DustOptions dustOptions = new Particle.DustOptions(color, pscale);
+                    Color color = Color.fromRGB((int) point[3], (int) point[4], (int) point[5]);
+                    float pscale = args.length > 1 ? Float.parseFloat(args[1]) : 1f;
+                    Particle.DustOptions dustOptions = new Particle.DustOptions(color, pscale);
 
-                        float scale = args.length > 1 ? Float.parseFloat(args[1]) : 1.0f;
-
-                        world.spawnParticle(Particle.REDSTONE, loc.clone().add(point[0], point[1] + 10, point[2]), 1, 0, 0, 0, dustOptions);
-                    }
-
-                    player.sendMessage("" + count);
-                    count++;
+                    world.spawnParticle(Particle.REDSTONE, loc.clone().add(point[0], point[1] + 10, point[2]), 1, 0, 0, 0, dustOptions);
                 }
+
+                player.sendMessage("" + count);
+                count++;
+            }
         }.runTaskTimer(plugin, 0L, 1L);
 
 

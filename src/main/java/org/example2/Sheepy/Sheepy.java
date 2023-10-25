@@ -2,22 +2,19 @@ package org.example2.Sheepy;
 
 import org.bukkit.plugin.java.JavaPlugin;
 
-import java.io.File;
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public final class Sheepy extends JavaPlugin {
 
-    public static List<List<float[]>> models = new ArrayList<>();
+    public static Map<String, List<List<float[]>>> anims = new HashMap<>();
 
     @Override
     public void onEnable() {
         getCommand("test").setExecutor(new TestCommand());
-        for (int i = 0; i < 80; i++) {
-            models.add(ModelLoader.loadModel(new File(getDataFolder(), "len" + i + ".csv")));
-        }
-        //log
-        getLogger().info("models loaded " + models.size() + " models");
+        anims.put("len", ModelLoader.loadAnim("len"));
+//        getLogger().info("models loaded " + anims.size() + " anims");
     }
 
     @Override
