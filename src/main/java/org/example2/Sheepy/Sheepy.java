@@ -14,7 +14,9 @@ public final class Sheepy extends JavaPlugin {
 
     @Override
     public void onEnable() {
-        Objects.requireNonNull(getCommand("test")).setExecutor(new TestCommand());
+        Objects.requireNonNull(getCommand("test")).setExecutor(new PlayCommand());
+        Objects.requireNonNull(getCommand("s")).setExecutor(new StopCommand());
+        Objects.requireNonNull(getCommand("load")).setExecutor(new LoadCommand());
         // get plugin data folder
         File[] animFolders = getDataFolder().listFiles();
 
@@ -24,8 +26,7 @@ public final class Sheepy extends JavaPlugin {
 //        for (File folder : animFolders) {
 //            anims.put(folder.getName(), AnimLoader.loadAnim(folder.getName()));
 //        }
-//        anims.put("len", AnimLoader.loadAnim("len"));joo
-        anims.put("test", AnimLoader.loadAnimSingleFile("test.csv"));
+//        anims.put("len", AnimLoader.loadAnim("len"));
         getLogger().info("loaded " + anims.size() + " anims");
     }
 

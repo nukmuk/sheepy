@@ -17,7 +17,7 @@ import java.util.List;
 
 import static org.example2.Sheepy.Sheepy.anims;
 
-public class TestCommand implements CommandExecutor {
+public class PlayCommand implements CommandExecutor {
 
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull org.bukkit.command.Command command, @NotNull String label, @NotNull String[] args) {
@@ -51,6 +51,7 @@ public class TestCommand implements CommandExecutor {
             @Override
             public void run() {
                 if (count >= anim.size() - 1) {
+                    sender.sendMessage("done");
                     this.cancel();
                 }
 
@@ -77,12 +78,15 @@ public class TestCommand implements CommandExecutor {
                     float pscale = args.length > 1 ? Float.parseFloat(args[1]) : 1f;
                     Particle.DustOptions dustOptions = new Particle.DustOptions(color, pscale);
 
-                    Vector pos = loc.toVector().add(new Vector(point[0], point[1], point[2]));
+                    float scale = args.length > 2 ? Float.parseFloat(args[2]) : 1f;
+
+                    Vector pointPos = new Vector(point[0], point[1], point[2]).multiply(scale);
+                    Vector pos = pointPos.add(loc.toVector());
 
                     world.spawnParticle(Particle.REDSTONE, pos.toLocation(world), 1, 0, 0, 0, dustOptions);
                 }
 
-                sender.sendMessage("" + count);
+//                sender.sendMessage("" + count);
                 count++;
             }
         }.runTaskTimer(plugin, 0L, 1L);
@@ -97,10 +101,11 @@ public class TestCommand implements CommandExecutor {
     }
 
     private Location getLocation(CommandSender sender) {
+        Vector offset = new Vector(0.5, 1, 0.5);
         if (sender instanceof Player player) {
-            return player.getTargetBlock(null, 100).getLocation().add(0, 15, 0);
+            return player.getTargetBlock(null, 100).getLocation().add(offset);
         } else if (sender instanceof BlockCommandSender blockCommandSender) {
-            return blockCommandSender.getBlock().getLocation().add(0.5, 15, 0.5);
+            return blockCommandSender.getBlock().getLocation().add(offset);
         }
         return null;
     }

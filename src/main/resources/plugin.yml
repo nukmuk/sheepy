@@ -1,6 +1,15 @@
 name: Sheepy
-version: '${version}'
+version: '0.0.1'
 main: org.example2.Sheepy.Sheepy
 api-version: '1.20'
 commands:
   test:
+    description: jea
+    aliases:
+      - t
+  s:
+    description: stop tasks
+  load:
+    aliases:
+      - l
+    description: load animation from file

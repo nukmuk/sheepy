@@ -60,24 +60,23 @@ public class AnimLoader {
         try {
             BufferedReader br = new BufferedReader(new FileReader(animFile));
             String line;
-            int counter = 0;
+//            int counter = 0;
 
             while ((line = br.readLine()) != null) {
-
-                // skip reading first line
-                if (counter == 0) {
-                    counter++;
-                    continue;
-                }
 
                 // add frame to frames
                 if (line.startsWith("f")) {
                     frames.add(particles);
                     particles = new ArrayList<>();
+
+                    if (frames.size() % 500 == 0) {
+                        getLogger().info("loaded frame " + frames.size());
+                    }
+
                     continue;
                 }
 
-                counter++;
+//                counter++;
                 float[] particle = convertToParticle(line);
                 particles.add(particle);
             }
@@ -93,8 +92,8 @@ public class AnimLoader {
     private static float[] convertToParticle(String line) {
         String[] values = line.split(",");
         float x = Float.parseFloat(values[0]);
-        float y = Float.parseFloat(values[1]) - 14;
-        float z = Float.parseFloat(values[2]) + 0;
+        float y = Float.parseFloat(values[1]);
+        float z = Float.parseFloat(values[2]);
         float r = Float.parseFloat(values[3]) * 255;
         float g = Float.parseFloat(values[4]) * 255;
         float b = Float.parseFloat(values[5]) * 255;
