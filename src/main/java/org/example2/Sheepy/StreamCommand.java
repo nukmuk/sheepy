@@ -15,6 +15,7 @@ import org.jetbrains.annotations.NotNull;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import java.io.IOException;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.List;
@@ -38,7 +39,7 @@ public class StreamCommand implements CommandExecutor {
 
         Bukkit.getScheduler().cancelTasks(plugin);
 
-        String fileName = args[0];
+        String fileName = args[0].replaceAll("[^a-zA-Z0-9]", "") + ".csv";
 
         File pluginFolder = plugin.getDataFolder();
         File animFile = new File(pluginFolder, fileName);
@@ -61,6 +62,7 @@ public class StreamCommand implements CommandExecutor {
                     BufferedReader br = new BufferedReader(new FileReader(animFile));
                     String line;
                     BukkitTask spawnParticles = null;
+                    boolean end = false;
                     while ((line = br.readLine()) != null) {
 
                         // add frame to frames
@@ -84,7 +86,14 @@ public class StreamCommand implements CommandExecutor {
                                     List<float[]> frame = frames.poll();
                                     sender.sendActionBar(Component.text("loaded frames: " + frames.size()));
                                     if (frame == null) {
-                                        this.cancel();
+                                        try {
+                                            boolean ignored = br.ready();
+                                        } catch (IOException e) {
+                                            sender.sendMessage(ChatColor.GREEN + "end :)");
+                                            this.cancel();
+                                            return;
+                                        }
+                                        sender.sendActionBar(Component.text(ChatColor.RED + "lagaa"));
                                         return;
                                     }
                                     playFrame(frame, args, loc);
@@ -99,6 +108,7 @@ public class StreamCommand implements CommandExecutor {
                         frame.add(particle);
 
                     }
+                    end = true;
                     br.close();
                 } catch (Exception e) {
                     // send message to minecraft console
