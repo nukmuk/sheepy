@@ -21,10 +21,10 @@ public class PlayCommand implements CommandExecutor {
 
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull org.bukkit.command.Command command, @NotNull String label, @NotNull String[] args) {
-//        if (!(sender instanceof Player) && !(sender instanceof BlockCommandSender)) {
-//            sender.sendMessage(ChatColor.RED + "only players can use this command - " + sender.getClass());
-//            return true;
-//        }
+        if (!(sender instanceof Player) && !(sender instanceof BlockCommandSender)) {
+            sender.sendMessage(ChatColor.RED + "only players can use this command - " + sender.getClass());
+            return true;
+        }
 
 
         // create getLocation function
@@ -72,19 +72,7 @@ public class PlayCommand implements CommandExecutor {
 
                 // loop over particles in model
                 List<float[]> frame = anim.get(count);
-                for (float[] point : frame) {
-
-                    Color color = Color.fromRGB((int) point[3], (int) point[4], (int) point[5]);
-                    float pscale = args.length > 1 ? Float.parseFloat(args[1]) : 1f;
-                    Particle.DustOptions dustOptions = new Particle.DustOptions(color, pscale);
-
-                    float scale = args.length > 2 ? Float.parseFloat(args[2]) : 1f;
-
-                    Vector pointPos = new Vector(point[0], point[1], point[2]).multiply(scale);
-                    Vector pos = pointPos.add(loc.toVector());
-
-                    world.spawnParticle(Particle.REDSTONE, pos.toLocation(world), 1, 0, 0, 0, dustOptions);
-                }
+                StreamCommand.playFrame(frame, args, loc);
 
 //                sender.sendMessage("" + count);
                 count++;
@@ -100,7 +88,7 @@ public class PlayCommand implements CommandExecutor {
         return false;
     }
 
-    private Location getLocation(CommandSender sender) {
+    static Location getLocation(CommandSender sender) {
         Vector offset = new Vector(0.5, 1, 0.5);
         if (sender instanceof Player player) {
             return player.getTargetBlock(null, 100).getLocation().add(offset);

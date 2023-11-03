@@ -14,9 +14,10 @@ public final class Sheepy extends JavaPlugin {
 
     @Override
     public void onEnable() {
-        Objects.requireNonNull(getCommand("test")).setExecutor(new PlayCommand());
+//        Objects.requireNonNull(getCommand("test")).setExecutor(new PlayCommand());
         Objects.requireNonNull(getCommand("s")).setExecutor(new StopCommand());
-        Objects.requireNonNull(getCommand("load")).setExecutor(new LoadCommand());
+//        Objects.requireNonNull(getCommand("load")).setExecutor(new LoadCommand());
+        Objects.requireNonNull(getCommand("stream")).setExecutor(new StreamCommand());
         // get plugin data folder
         File[] animFolders = getDataFolder().listFiles();
 

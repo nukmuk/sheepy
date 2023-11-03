@@ -89,7 +89,7 @@ public class AnimLoader {
         return frames;
     }
 
-    private static float[] convertToParticle(String line) {
+    static float[] convertToParticle(String line) {
         String[] values = line.split(",");
         float x = Float.parseFloat(values[0]);
         float y = Float.parseFloat(values[1]);
@@ -97,10 +97,8 @@ public class AnimLoader {
         float r = Float.parseFloat(values[3]) * 255;
         float g = Float.parseFloat(values[4]) * 255;
         float b = Float.parseFloat(values[5]) * 255;
-//                float s = Float.parseFloat(values[6]);
-        float s = 1.0f;
+        float s = values.length > 6 ? Float.parseFloat(values[6]) : 1.0f;
 
-        //                plugin.getLogger().info("particle " + Arrays.toString(particle));
         return new float[]{x, y, z, r, g, b, s};
     }
 
