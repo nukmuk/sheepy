@@ -62,7 +62,6 @@ public class StreamCommand implements CommandExecutor {
                     BufferedReader br = new BufferedReader(new FileReader(animFile));
                     String line;
                     BukkitTask spawnParticles = null;
-                    boolean end = false;
                     while ((line = br.readLine()) != null) {
 
                         // add frame to frames
@@ -108,12 +107,10 @@ public class StreamCommand implements CommandExecutor {
                         frame.add(particle);
 
                     }
-                    end = true;
                     br.close();
                 } catch (Exception e) {
                     // send message to minecraft console
-                    sender.sendMessage(ChatColor.RED + "error reading csv file");
-                    sender.sendMessage(e.toString());
+                    sender.sendMessage(ChatColor.RED + "file not found");
                 }
 
             }
