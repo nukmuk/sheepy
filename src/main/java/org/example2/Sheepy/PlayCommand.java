@@ -33,7 +33,6 @@ public class PlayCommand implements CommandExecutor {
         final Location loc = getLocation(sender);
 
         assert loc != null;
-        World world = loc.getWorld();
 
         Plugin plugin = Sheepy.getPlugin(Sheepy.class);
         List<List<float[]>> anim = args.length > 0 ? anims.get(args[0]) : anims.entrySet().iterator().next().getValue();
@@ -91,7 +90,7 @@ public class PlayCommand implements CommandExecutor {
     static Location getLocation(CommandSender sender) {
         Vector offset = new Vector(0.5, 1, 0.5);
         if (sender instanceof Player player) {
-            return player.getTargetBlock(null, 16).getLocation().add(offset);
+            return player.getTargetBlock(null, 64).getLocation().add(offset);
         } else if (sender instanceof BlockCommandSender blockCommandSender) {
             return blockCommandSender.getBlock().getLocation().add(offset);
         }

@@ -16,10 +16,10 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Queue;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
 
 import static org.example2.Sheepy.AnimLoader.convertToParticle;
 import static org.example2.Sheepy.AnimLoader.plugin;
@@ -45,7 +45,7 @@ public class StreamCommand implements CommandExecutor {
         File animFile = new File(pluginFolder, fileName);
 
         plugin.getLogger().info("streaming: " + fileName);
-        Queue<List<float[]>> frames = new ArrayDeque<>();
+        BlockingQueue<List<float[]>> frames = new ArrayBlockingQueue<>(1); // smaller numbers seem to have better performance
 
         // particle attrib: float
         // particle:        float[]
@@ -61,44 +61,37 @@ public class StreamCommand implements CommandExecutor {
                 try {
                     BufferedReader br = new BufferedReader(new FileReader(animFile));
                     String line;
-                    BukkitTask spawnParticles = null;
-                    while ((line = br.readLine()) != null) {
+                    Location loc = PlayCommand.getLocation(sender);
+                    BukkitTask spawnParticles = new BukkitRunnable() {
+
+                        @Override
+                        public void run() {
+                            sender.sendActionBar(Component.text("frames in queue: " + frames.size()));
+                            List<float[]> frame = frames.poll();
+                            if (frame == null) {
+                                try {
+                                    boolean ignored = br.ready();
+                                } catch (IOException e) {
+                                    sender.sendActionBar(Component.text(ChatColor.GREEN + "end :)"));
+                                    this.cancel();
+                                    return;
+                                }
+                                sender.sendActionBar(Component.text(ChatColor.RED + "lagaa"));
+                                return;
+                            }
+                            playFrame(frame, args, loc);
+                        }
+
+                    }.runTaskTimer(plugin, 0L, 1L);
+
+                    while ((line = br.readLine()) != null && !spawnParticles.isCancelled()) {
 
                         // add frame to frames
                         if (line.startsWith("f")) {
-                            frames.offer(frame);
+                            frames.put(frame);
                             frame = new ArrayList<>();
 
 //                            if (frames.size() % 500 == 0) sender.sendMessage(Component.text("loaded frame " + frames.size()));
-
-                            // play anim
-                            final Location loc = PlayCommand.getLocation(sender);
-
-                            assert loc != null;
-
-                            if (spawnParticles != null) continue;
-
-                            spawnParticles = new BukkitRunnable() {
-
-                                @Override
-                                public void run() {
-                                    List<float[]> frame = frames.poll();
-                                    sender.sendActionBar(Component.text("loaded frames: " + frames.size()));
-                                    if (frame == null) {
-                                        try {
-                                            boolean ignored = br.ready();
-                                        } catch (IOException e) {
-                                            sender.sendMessage(ChatColor.GREEN + "end :)");
-                                            this.cancel();
-                                            return;
-                                        }
-                                        sender.sendActionBar(Component.text(ChatColor.RED + "lagaa"));
-                                        return;
-                                    }
-                                    playFrame(frame, args, loc);
-                                }
-
-                            }.runTaskTimer(plugin, 0L, 1L);
 
                             continue;
                         }
@@ -115,7 +108,6 @@ public class StreamCommand implements CommandExecutor {
 
             }
         }.runTaskAsynchronously(plugin);
-
 
         return false;
     }
