@@ -8,7 +8,6 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
-import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
 
@@ -34,10 +33,20 @@ public class StreamCommand implements CommandExecutor {
         }
     }
 
+    public enum ParticleType {
+        REDSTONE,
+        multiple_dust,
+        SPELL_MOB,
+        SPELL_MOB_AMBIENT,
+        DUST_TRANSITION,
+    }
+
     static final List<Animation> animations = new ArrayList<>();
 
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
+        // args: <filename> [particle scale] [animation scale] [particle type 1-4]
+
         if (!(sender instanceof Player) && !(sender instanceof BlockCommandSender)) {
             sender.sendMessage(ChatColor.RED + "only players can use this command - " + sender.getClass());
             return true;
@@ -51,7 +60,7 @@ public class StreamCommand implements CommandExecutor {
         stopParticleTasks();
 
         String fileName = args[0].replaceAll("[^a-zA-Z0-9]", "") + ".csv";
-
+        ParticleType particleType = args.length > 3 ? ParticleType.valueOf(args[3]) : ParticleType.REDSTONE;
 
 
         // particle attrib: float
@@ -59,17 +68,18 @@ public class StreamCommand implements CommandExecutor {
         // frame:           List<float[]>
         // animation:       Queue<List<float[]>>
 
-        BlockingQueue<List<float[]>> frames = new ArrayBlockingQueue<>(100); // smaller numbers seem to have better performance
+        BlockingQueue<List<float[]>> frames = new ArrayBlockingQueue<>(1); // smaller numbers seem to have better performance
         Location loc = PlayCommand.getLocation(sender);
         Animation animation = new Animation(frames);
         animations.add(animation);
 
-        BukkitTask particleTask = new BukkitRunnable() {
+        // particle spawner
+        new BukkitRunnable() {
 
             @Override
             public void run() {
 
-                sender.sendActionBar(Component.text("frames in queue: " + frames.size()));
+                sender.sendActionBar(Component.text(ChatColor.GRAY + "frames in queue: " + frames.size()));
                 List<float[]> frame = frames.poll();
                 if (frame == null) {
                     if (animation.dontLoad) {
@@ -82,12 +92,13 @@ public class StreamCommand implements CommandExecutor {
                     sender.sendActionBar(Component.text(ChatColor.RED + "lagaa"));
                     return;
                 }
-                playFrame(frame, args, loc);
+                playFrame(frame, args, loc, particleType);
             }
 
         }.runTaskTimer(plugin, 0L, 1L);
 
-        BukkitTask fileReader = new BukkitRunnable() {
+        // file reader
+        new BukkitRunnable() {
             @Override
             public void run() {
 
@@ -105,25 +116,19 @@ public class StreamCommand implements CommandExecutor {
                         String line = br.readLine();
                         if (line == null) {
                             animation.dontLoad = true;
-                            sender.sendMessage(ChatColor.BLUE + "LOADING FINISHED" + this.getTaskId());
-                            continue;
+                            return;
                         }
 
                         // add frame to frames
                         if (line.startsWith("f")) {
                             frames.put(frame);
                             frame = new ArrayList<>();
-
-//                            if (frames.size() % 500 == 0) sender.sendMessage(Component.text("loaded frame " + frames.size()));
-
                             continue;
                         }
 
                         float[] particle = convertToParticle(line);
                         frame.add(particle);
                     }
-                    sender.sendMessage(ChatColor.GOLD + "task ending" + this.getTaskId());
-                    this.cancel();
                 } catch (Exception e) {
                     // send message to minecraft console
                     sender.sendMessage(ChatColor.RED + "file not found " + e.getClass());
@@ -134,7 +139,7 @@ public class StreamCommand implements CommandExecutor {
         return false;
     }
 
-    static void playFrame(List<float[]> frame, @NotNull String[] args, Location loc) {
+    static void playFrame(List<float[]> frame, @NotNull String[] args, Location loc, ParticleType particleType) {
         for (float[] point : frame) {
 
             World world = loc.getWorld();
@@ -149,11 +154,44 @@ public class StreamCommand implements CommandExecutor {
             Vector pointPos = new Vector(point[0], point[1], point[2]).multiply(scale);
             Vector pos = pointPos.add(loc.toVector());
 
-            world.spawnParticle(Particle.REDSTONE, pos.toLocation(world), 1, 0, 0, 0, 0, dustOptions, true);
+            switch (particleType){
+                case REDSTONE:
+                    world.spawnParticle(Particle.REDSTONE, pos.toLocation(world), 1, 0, 0, 0, 0, dustOptions, true);
+                    break;
+
+                case multiple_dust:
+                    // spawn ~16k particles total every tick so previous frames disappear
+                    int particlesPerTick = 8000;
+                    int total = args.length > 4 ? Integer.parseInt(args[4]) : particlesPerTick;
+                    int amount = Math.floorDiv(total, frame.size());
+                    world.spawnParticle(Particle.REDSTONE, pos.toLocation(world), amount, 0, 0, 0, 1, dustOptions, true);
+                    break;
+
+                case SPELL_MOB:
+                    world.spawnParticle(Particle.SPELL_MOB, pos.toLocation(world), 0, 1-color.getRed(), 1-color.getGreen(), 1-color.getBlue(), 1, null, true);
+                    break;
+
+                case SPELL_MOB_AMBIENT:
+                    world.spawnParticle(Particle.SPELL_MOB_AMBIENT, pos.toLocation(world), 0, 1-color.getRed(), 1-color.getGreen(), 1-color.getBlue(), 1, null, true);
+                    break;
+
+                case DUST_TRANSITION:
+                    Particle.DustTransition dustTransition = new Particle.DustTransition(color, color, pscale);
+                    world.spawnParticle(Particle.DUST_COLOR_TRANSITION, pos.toLocation(world), 0, dustTransition);
+                    break;
+            }
+
+
+
+
         }
     }
 
-    static void stopParticleTasks() {
+    static void playFrame(List<float[]> frame, @NotNull String[] args, Location loc) {
+        playFrame(frame, args, loc, ParticleType.REDSTONE);
+    }
+
+        static void stopParticleTasks() {
         animations.forEach(animation -> {
             animation.dontLoad = true;
             animation.frames.clear();
