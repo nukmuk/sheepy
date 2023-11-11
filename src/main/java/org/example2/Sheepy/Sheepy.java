@@ -15,7 +15,7 @@ public final class Sheepy extends JavaPlugin {
 //        Objects.requireNonNull(getCommand("test")).setExecutor(new PlayCommand());
         Objects.requireNonNull(getCommand("s")).setExecutor(new StopCommand());
 //        Objects.requireNonNull(getCommand("load")).setExecutor(new LoadCommand());
-        Objects.requireNonNull(getCommand("stream")).setExecutor(new StreamCommand());
+        Objects.requireNonNull(getCommand("stream")).setExecutor(new StreamBytesCommand());
 
         animFileNames = getCsvFileNames();
 

@@ -20,7 +20,7 @@ public class StopCommand implements CommandExecutor {
         List<BukkitTask> tasks = Bukkit.getScheduler().getPendingTasks();
         sender.sendMessage(tasks.size() + " tasks: " + tasks);
         sender.sendMessage(Arrays.toString(tasks.stream().map(BukkitTask::getTaskId).toArray()));
-        StreamCommand.stopParticleTasks();
+        StreamBytesCommand.stopParticleTasks();
         return true;
     }
 }
