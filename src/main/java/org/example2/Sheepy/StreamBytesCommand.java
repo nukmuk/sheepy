@@ -131,7 +131,7 @@ public class StreamBytesCommand implements CommandExecutor {
                                 frame[i].position[j] = posComponentFloat;
                             }
                             Color colorAndScale = Color.fromARGB(bb.getInt());
-                            frame[i].color = Color.fromRGB(colorAndScale.asRGB());
+                            frame[i].color = colorAndScale;
                             frame[i].pscale = (byte) colorAndScale.getAlpha();
                         }
                         frames.put(frame);
