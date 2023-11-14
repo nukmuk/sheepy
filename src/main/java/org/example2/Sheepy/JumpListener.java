@@ -50,6 +50,8 @@ public class JumpListener implements Listener {
         vel.add(dir);
         p.setVelocity(dir);
         p.getWorld().playSound(p, Sound.ENTITY_GHAST_SHOOT, 1f, (float) (1 - pitchRandomness / 2 + Math.random() * pitchRandomness));
+
+        AnimUtils.playRandomFile(p);
     }
 
     public static void reloadConfig() {
