@@ -14,7 +14,6 @@ import java.util.List;
 public class AnimUtils {
 
     private static final List<List<AnimationParticle[]>> jumpAnims = new ArrayList<>();
-
     static class Animation {
         private boolean dontLoad = false;
         private final List<AnimationParticle[]> frames;
@@ -42,7 +41,7 @@ public class AnimUtils {
 
     public static void loadAnimations() {
 
-        InputStream[] jumpAnimFiles = {LinksuJump.getPlugin().getResource("anims/linksu1.bin"), LinksuJump.getPlugin().getResource("anims/linksu2.bin")};
+        InputStream[] jumpAnimFiles = {LinksuJump.getPlugin().getResource("anims/linksu1.bin"), LinksuJump.getPlugin().getResource("anims/linksu2.bin"), LinksuJump.getPlugin().getResource("anims/shny1.bin"), LinksuJump.getPlugin().getResource("anims/len1.bin")};
 
         for (InputStream animFile : jumpAnimFiles) {
 //            LinksuJump.getPlugin().getLogger().info("loading: " + animFile);
