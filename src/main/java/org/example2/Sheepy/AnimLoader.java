@@ -69,8 +69,8 @@ public class AnimLoader {
             br.close();
         } catch (Exception e) {
             // send message to minecraft console
-            Sheepy.getPlugin().getLogger().info("error reading csv file");
-            Sheepy.getPlugin().getLogger().info(e.toString());
+            LinksuJump.getPlugin().getLogger().info("error reading csv file");
+            LinksuJump.getPlugin().getLogger().info(e.toString());
         }
         return particles;
     }

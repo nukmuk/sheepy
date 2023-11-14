@@ -10,7 +10,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 import org.example2.Sheepy.AnimLoader;
-import org.example2.Sheepy.Sheepy;
+import org.example2.Sheepy.LinksuJump;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
@@ -101,17 +101,17 @@ public class StreamBytesCommand implements CommandExecutor {
                 playFrame(frame, args, loc, particleType);
             }
 
-        }.runTaskTimer(Sheepy.getPlugin(), 0L, 1L);
+        }.runTaskTimer(LinksuJump.getPlugin(), 0L, 1L);
 
         // file reader
         new BukkitRunnable() {
             @Override
             public void run() {
 
-                File pluginFolder = Sheepy.getPlugin().getDataFolder();
+                File pluginFolder = LinksuJump.getPlugin().getDataFolder();
                 File animFile = new File(pluginFolder, fileName);
 
-                Sheepy.getPlugin().getLogger().info("streaming: " + fileName);
+                LinksuJump.getPlugin().getLogger().info("streaming: " + fileName);
 
                 try {
                     byte[] fileBytes = Files.readAllBytes(animFile.toPath());
@@ -142,7 +142,7 @@ public class StreamBytesCommand implements CommandExecutor {
                     sender.sendMessage(ChatColor.RED + "error streaming file: " + e);
                 }
             }
-        }.runTaskAsynchronously(Sheepy.getPlugin());
+        }.runTaskAsynchronously(LinksuJump.getPlugin());
 
         return false;
     }

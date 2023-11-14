@@ -6,15 +6,14 @@ import org.example2.Sheepy.Commands.LinksuCommand;
 
 import java.util.Objects;
 
-public final class Sheepy extends JavaPlugin {
+public final class LinksuJump extends JavaPlugin {
 
     private final FileConfiguration config = getConfig();
-    private static Sheepy plugin;
+    private static LinksuJump plugin;
 
     @Override
     public void onEnable() {
         plugin = this;
-        config.addDefault("jump-strength", 10.0);
         config.options().copyDefaults(true);
         saveConfig();
         Objects.requireNonNull(getCommand("linksu")).setExecutor(new LinksuCommand());
@@ -31,7 +30,7 @@ public final class Sheepy extends JavaPlugin {
         // Plugin shutdown logic
     }
 
-    public static Sheepy getPlugin() {
+    public static LinksuJump getPlugin() {
         return plugin;
     }
 

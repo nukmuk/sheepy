@@ -1,6 +1,6 @@
-name: Sheepy
+name: LinksuJump
 version: '0.0.1'
-main: org.example2.Sheepy.Sheepy
+main: org.example2.Sheepy.LinksuJump
 api-version: '1.20'
 commands:
   linksu:

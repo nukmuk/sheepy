@@ -15,13 +15,37 @@ public class AnimUtils {
 
     private static final List<List<AnimationParticle[]>> jumpAnims = new ArrayList<>();
 
+    static class Animation {
+        private boolean dontLoad = false;
+        private final List<AnimationParticle[]> frames;
+
+        private Animation(List<AnimationParticle[]> frames) {
+            this.frames = frames;
+        }
+    }
+
+    static class AnimationParticle {
+        private final float[] position = new float[3];
+        private Color color = Color.BLACK;
+        private byte pscale = 0;
+    }
+
+    public enum ParticleType {
+        REDSTONE,
+        multiple_dust,
+        SPELL_MOB,
+        SPELL_MOB_AMBIENT,
+        DUST_TRANSITION,
+    }
+
+    static final List<Animation> animations = new ArrayList<>();
 
     public static void loadAnimations() {
 
-        InputStream[] jumpAnimFiles = {Sheepy.getPlugin().getResource("anims/linksu1.bin"), Sheepy.getPlugin().getResource("anims/linksu2.bin")};
+        InputStream[] jumpAnimFiles = {LinksuJump.getPlugin().getResource("anims/linksu1.bin"), LinksuJump.getPlugin().getResource("anims/linksu2.bin")};
 
         for (InputStream animFile : jumpAnimFiles) {
-            Sheepy.getPlugin().getLogger().info("loading: " + animFile);
+//            LinksuJump.getPlugin().getLogger().info("loading: " + animFile);
             List<AnimationParticle[]> frames = new ArrayList<>();
 
 
@@ -56,31 +80,6 @@ public class AnimUtils {
         }
     }
 
-    static class Animation {
-        private boolean dontLoad = false;
-        private final List<AnimationParticle[]> frames;
-
-        private Animation(List<AnimationParticle[]> frames) {
-            this.frames = frames;
-        }
-    }
-
-    static class AnimationParticle {
-        private final float[] position = new float[3];
-        private Color color = Color.BLACK;
-        private byte pscale = 0;
-    }
-
-    public enum ParticleType {
-        REDSTONE,
-        multiple_dust,
-        SPELL_MOB,
-        SPELL_MOB_AMBIENT,
-        DUST_TRANSITION,
-    }
-
-    static final List<Animation> animations = new ArrayList<>();
-
     public static void playRandomFile(Player p) {
         // args: <filename> [particle scale] [animation scale] [particle type] [particle count per tick]
 
@@ -93,7 +92,6 @@ public class AnimUtils {
         int idx = (int) (Math.random() * jumpAnims.size());
         List<AnimationParticle[]> frames = jumpAnims.get(idx);
 
-        Location loc = p.getLocation().add(0, 0.1, 0);
 
         // particle spawner
         new BukkitRunnable() {
@@ -102,7 +100,14 @@ public class AnimUtils {
 
             @Override
             public void run() {
-                AnimationParticle[] frame = frames.get(counter);
+                Location loc = p.getLocation().add(0, 0.1, 0);
+                AnimationParticle[] frame;
+                try {
+                    frame = frames.get(counter / JumpListener.frameRepeats);
+                } catch (Exception e) {
+                    this.cancel();
+                    return;
+                }
                 if (frame == null) {
                     this.cancel();
                     return;
@@ -111,7 +116,7 @@ public class AnimUtils {
                 counter++;
             }
 
-        }.runTaskTimer(Sheepy.getPlugin(), 0L, 1L);
+        }.runTaskTimer(LinksuJump.getPlugin(), 0L, 1L);
 
     }
 
@@ -126,8 +131,14 @@ public class AnimUtils {
             pscale *= custom_pscale;
             Particle.DustOptions dustOptions = new Particle.DustOptions(color, pscale);
 
+            float yaw = (float) ((loc.getYaw() + 180) * (Math.PI / 180));
+
             Vector pointPos = new Vector(p.position[0], p.position[1], p.position[2]).multiply(scale);
+
+            pointPos = rotateY(pointPos, yaw);
+
             Vector pos = pointPos.add(loc.toVector());
+
 
             switch (particleType) {
                 case REDSTONE:
@@ -179,4 +190,15 @@ public class AnimUtils {
                 (hbits & 0x8000) << 16          // sign  << ( 31 - 15 )
                         | (exp | mant) << 13);         // value << ( 23 - 10 )
     }
+
+    private static Vector rotateY(Vector vector, double angle) { // angle in radians
+
+        float x1 = (float)(vector.getX() * Math.cos(angle) - vector.getZ() * Math.sin(angle));
+
+        float z1 = (float)(vector.getX() * Math.sin(angle) + vector.getZ() * Math.cos(angle)) ;
+
+        return new Vector(x1, vector.getY(), z1);
+
+    }
 }
+

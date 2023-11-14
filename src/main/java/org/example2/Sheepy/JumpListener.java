@@ -15,12 +15,13 @@ import java.util.List;
 
 public class JumpListener implements Listener {
 
-    static FileConfiguration config = Sheepy.getPlugin().getConfig();
+    static FileConfiguration config = LinksuJump.getPlugin().getConfig();
     private static float jumpStrength;
     private static long jumpDelay;
     private static float jumpAngle;
     private static float pitchRandomness;
     private static float blockOffset;
+    public static int frameRepeats;
     private final List<Player> flying = new ArrayList<>();
 
     @EventHandler
@@ -37,7 +38,7 @@ public class JumpListener implements Listener {
             public void run() {
                 flying.remove(p);
             }
-        }.runTaskLaterAsynchronously(Sheepy.getPlugin(), jumpDelay);
+        }.runTaskLaterAsynchronously(LinksuJump.getPlugin(), jumpDelay);
 
         Vector vel = p.getVelocity();
         float yaw = (float) ((e.getTo().getYaw() + 90) * (Math.PI / 180));
@@ -60,5 +61,6 @@ public class JumpListener implements Listener {
         jumpAngle = (float) ((float) config.getInt("jump-angle") * Math.PI / 2 / 90);
         pitchRandomness = (float) config.getDouble("pitch-randomness");
         blockOffset = (float) config.getDouble("block-offset");
+        frameRepeats = Math.max(config.getInt("frame-repeats"), 1);
     }
 }

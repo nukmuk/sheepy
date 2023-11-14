@@ -3,3 +3,4 @@ jump-delay: 4 # in ticks
 jump-angle: 45 # in degrees
 pitch-randomness: 0.2
 block-offset: 0.5
+frame-repeats: 3
