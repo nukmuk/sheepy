@@ -1,4 +1,4 @@
-package org.example2.Sheepy;
+package org.example2.Sheepy.Commands;
 
 import net.kyori.adventure.text.Component;
 import org.bukkit.*;
@@ -9,6 +9,8 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
+import org.example2.Sheepy.AnimLoader;
+import org.example2.Sheepy.Sheepy;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
@@ -19,8 +21,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
-
-import static org.example2.Sheepy.AnimLoader.plugin;
 
 public class StreamBytesCommand implements CommandExecutor {
 
@@ -75,7 +75,7 @@ public class StreamBytesCommand implements CommandExecutor {
         // animation:       Queue<AnimationParticle[]>
 
         BlockingQueue<AnimationParticle[]> frames = new ArrayBlockingQueue<>(1); // smaller numbers seem to have better performance
-        Location loc = PlayCommand.getLocation(sender);
+        Location loc = AnimLoader.getLocation(sender);
         Animation animation = new Animation(frames);
         animations.add(animation);
 
@@ -101,17 +101,17 @@ public class StreamBytesCommand implements CommandExecutor {
                 playFrame(frame, args, loc, particleType);
             }
 
-        }.runTaskTimer(plugin, 0L, 1L);
+        }.runTaskTimer(Sheepy.getPlugin(), 0L, 1L);
 
         // file reader
         new BukkitRunnable() {
             @Override
             public void run() {
 
-                File pluginFolder = plugin.getDataFolder();
+                File pluginFolder = Sheepy.getPlugin().getDataFolder();
                 File animFile = new File(pluginFolder, fileName);
 
-                plugin.getLogger().info("streaming: " + fileName);
+                Sheepy.getPlugin().getLogger().info("streaming: " + fileName);
 
                 try {
                     byte[] fileBytes = Files.readAllBytes(animFile.toPath());
@@ -142,7 +142,7 @@ public class StreamBytesCommand implements CommandExecutor {
                     sender.sendMessage(ChatColor.RED + "error streaming file: " + e);
                 }
             }
-        }.runTaskAsynchronously(plugin);
+        }.runTaskAsynchronously(Sheepy.getPlugin());
 
         return false;
     }

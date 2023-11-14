@@ -1,6 +1,10 @@
 package org.example2.Sheepy;
 
-import org.bukkit.plugin.Plugin;
+import org.bukkit.Location;
+import org.bukkit.command.BlockCommandSender;
+import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
+import org.bukkit.util.Vector;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -9,23 +13,20 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.bukkit.Bukkit.getLogger;
-import static org.bukkit.plugin.java.JavaPlugin.getPlugin;
 
 public class AnimLoader {
-
-    static Plugin plugin = getPlugin(Sheepy.class);
 
     public static List<List<float[]>> loadAnim(String folderName) {
 
 
         // get plugin data folder and get the files inside it
-        File pluginFolder = plugin.getDataFolder();
+        File pluginFolder = Sheepy.getPlugin().getDataFolder();
         File animFolder = new File(pluginFolder, folderName);
 
         File[] files = animFolder.listFiles();
 
         // create list of frames
-        plugin.getLogger().info("loading anim " + folderName);
+        Sheepy.getPlugin().getLogger().info("loading anim " + folderName);
         List<List<float[]>> frames = new ArrayList<>();
 
         // loop over files
@@ -39,7 +40,7 @@ public class AnimLoader {
             frames.add(frame);
         }
 
-        plugin.getLogger().info("loaded " + files.length + " frames");
+        Sheepy.getPlugin().getLogger().info("loaded " + files.length + " frames");
 
         return frames;
     }
@@ -48,11 +49,11 @@ public class AnimLoader {
 
 
         // get plugin data folder and get the files inside it
-        File pluginFolder = plugin.getDataFolder();
+        File pluginFolder = Sheepy.getPlugin().getDataFolder();
         File animFile = new File(pluginFolder, fileName);
 
         // create list of frames
-        plugin.getLogger().info("loading anim " + fileName);
+        Sheepy.getPlugin().getLogger().info("loading anim " + fileName);
         List<List<float[]>> frames = new ArrayList<>();
 
         List<float[]> particles = new ArrayList<>();
@@ -83,10 +84,20 @@ public class AnimLoader {
             br.close();
         } catch (Exception e) {
             // send message to minecraft console
-            plugin.getLogger().info("error reading csv file");
-            plugin.getLogger().info(e.toString());
+            Sheepy.getPlugin().getLogger().info("error reading csv file");
+            Sheepy.getPlugin().getLogger().info(e.toString());
         }
         return frames;
+    }
+
+    public static Location getLocation(CommandSender sender) {
+        Vector offset = new Vector(0.5, 1, 0.5);
+        if (sender instanceof Player player) {
+            return player.getTargetBlock(null, 64).getLocation().add(offset);
+        } else if (sender instanceof BlockCommandSender blockCommandSender) {
+            return blockCommandSender.getBlock().getLocation().add(offset);
+        }
+        return null;
     }
 
     static float[] convertToParticle(String line) {
@@ -134,8 +145,8 @@ public class AnimLoader {
             br.close();
         } catch (Exception e) {
             // send message to minecraft console
-            plugin.getLogger().info("error reading csv file");
-            plugin.getLogger().info(e.toString());
+            Sheepy.getPlugin().getLogger().info("error reading csv file");
+            Sheepy.getPlugin().getLogger().info(e.toString());
         }
         return particles;
     }

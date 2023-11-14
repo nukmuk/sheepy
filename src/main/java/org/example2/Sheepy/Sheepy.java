@@ -1,25 +1,31 @@
 package org.example2.Sheepy;
 
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.example2.Sheepy.Commands.LinksuCommand;
 
-import java.io.File;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 public final class Sheepy extends JavaPlugin {
 
-    public static Map<String, List<List<float[]>>> anims = new HashMap<>();
-    public static List<String> animFileNames = new ArrayList<>();
+    private Map<String, List<List<float[]>>> jumpAnims = new HashMap<>();
+    private final FileConfiguration config = getConfig();
+    private static Sheepy plugin;
 
     @Override
     public void onEnable() {
-//        Objects.requireNonNull(getCommand("test")).setExecutor(new PlayCommand());
-        Objects.requireNonNull(getCommand("s")).setExecutor(new StopCommand());
-//        Objects.requireNonNull(getCommand("load")).setExecutor(new LoadCommand());
-        Objects.requireNonNull(getCommand("stream")).setExecutor(new StreamBytesCommand());
+        plugin = this;
+        config.addDefault("jump-strength", 10.0);
+        config.options().copyDefaults(true);
+        saveConfig();
+        Objects.requireNonNull(getCommand("linksu")).setExecutor(new LinksuCommand());
 
-        animFileNames = getCsvFileNames();
+        reloadPlugin();
 
-        Objects.requireNonNull(getCommand("stream")).setTabCompleter(new StreamTabCompleter());
+        getServer().getPluginManager().registerEvents(new JumpListener(), this);
 
 
         // load all animations
@@ -31,19 +37,17 @@ public final class Sheepy extends JavaPlugin {
 //        getLogger().info("loaded " + anims.size() + " anims");
     }
 
-    private List<String> getCsvFileNames() {
-        List<File> animFiles = List.of(Objects.requireNonNull(getDataFolder().listFiles()));
-        animFiles = animFiles.stream()
-                .filter(File::isFile)
-                .toList();
-
-        return animFiles.stream()
-                .map(file -> file.getName().substring(0, file.getName().length() - 4))
-                .toList();
-    }
-
     @Override
     public void onDisable() {
         // Plugin shutdown logic
+    }
+
+    public static Sheepy getPlugin() {
+        return plugin;
+    }
+
+    public static void reloadPlugin() {
+        plugin.reloadConfig();
+        JumpListener.reloadConfig();
     }
 }
