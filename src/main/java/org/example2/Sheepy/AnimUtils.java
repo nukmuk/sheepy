@@ -1,8 +1,9 @@
 package org.example2.Sheepy;
 
 import org.bukkit.*;
-import org.bukkit.entity.Player;
+import org.bukkit.entity.Entity;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.Vector;
 
 import java.io.InputStream;
@@ -14,6 +15,7 @@ import java.util.List;
 public class AnimUtils {
 
     private static final List<List<AnimationParticle[]>> jumpAnims = new ArrayList<>();
+
     static class Animation {
         private boolean dontLoad = false;
         private final List<AnimationParticle[]> frames;
@@ -41,7 +43,14 @@ public class AnimUtils {
 
     public static void loadAnimations() {
 
-        InputStream[] jumpAnimFiles = {LinksuJump.getPlugin().getResource("anims/linksu1.bin"), LinksuJump.getPlugin().getResource("anims/linksu2.bin"), LinksuJump.getPlugin().getResource("anims/shny1.bin"), LinksuJump.getPlugin().getResource("anims/len1.bin")};
+        InputStream[] jumpAnimFiles = {LinksuJump.getPlugin().getResource("anims/linksu1.bin"),
+                LinksuJump.getPlugin().getResource("anims/linksu2.bin"),
+                LinksuJump.getPlugin().getResource("anims/linksu3.bin"),
+                LinksuJump.getPlugin().getResource("anims/linksu4.bin"),
+                LinksuJump.getPlugin().getResource("anims/linksu5.bin"),
+//                LinksuJump.getPlugin().getResource("anims/shny1.bin"),
+//                LinksuJump.getPlugin().getResource("anims/len1.bin")
+        };
 
         for (InputStream animFile : jumpAnimFiles) {
 //            LinksuJump.getPlugin().getLogger().info("loading: " + animFile);
@@ -79,7 +88,7 @@ public class AnimUtils {
         }
     }
 
-    public static void playRandomFile(Player p) {
+    public static BukkitTask playRandomFile(Entity e, int frameRepeat, boolean rotate) {
         // args: <filename> [particle scale] [animation scale] [particle type] [particle count per tick]
 
 
@@ -93,16 +102,16 @@ public class AnimUtils {
 
 
         // particle spawner
-        new BukkitRunnable() {
+        return new BukkitRunnable() {
 
             private int counter = 0;
 
             @Override
             public void run() {
-                Location loc = p.getLocation().add(0, 0.1, 0);
+                Location loc = e.getLocation().add(0, 0.1, 0);
                 AnimationParticle[] frame;
                 try {
-                    frame = frames.get(counter / JumpListener.frameRepeats);
+                    frame = frames.get(counter / frameRepeat);
                 } catch (Exception e) {
                     this.cancel();
                     return;
@@ -111,15 +120,16 @@ public class AnimUtils {
                     this.cancel();
                     return;
                 }
-                playFrame(frame, loc, ParticleType.REDSTONE, 2, 2);
+                playFrame(frame, loc, ParticleType.REDSTONE,
+                        (float) LinksuJump.getPlugin().getConfig().getDouble("particle-scale"),
+                        (float) LinksuJump.getPlugin().getConfig().getDouble("animation-scale"), rotate, e);
                 counter++;
             }
 
         }.runTaskTimer(LinksuJump.getPlugin(), 0L, 1L);
-
     }
 
-    static void playFrame(AnimationParticle[] frame, Location loc, ParticleType particleType, float custom_pscale, float scale) {
+    static void playFrame(AnimationParticle[] frame, Location loc, ParticleType particleType, float custom_pscale, float scale, boolean rotate, Entity e) {
         for (AnimationParticle p : frame) {
 
             World world = loc.getWorld();
@@ -134,7 +144,25 @@ public class AnimUtils {
 
             Vector pointPos = new Vector(p.position[0], p.position[1], p.position[2]).multiply(scale);
 
-            pointPos = rotateY(pointPos, yaw);
+            if (rotate) {
+                /*
+                SimpleMatrix pointMatrix = new SimpleMatrix(new double[][]{{pointPos.getX()}, {pointPos.getY()}, {pointPos.getZ()}});
+                pointMatrix = createPitchMatrix(Math.PI/2).mult(pointMatrix);
+                pointMatrix = createYawMatrix(-Math.PI/2).mult(pointMatrix);
+                pointMatrix = createPitchMatrix(e.getYaw()).mult(pointMatrix);
+//                LinksuJump.getPlugin().getLogger().info("" + pointMatrix);
+                pointPos = new Vector(pointMatrix.get(0), pointMatrix.get(1), pointMatrix.get(2));
+                 */
+
+                pointPos.rotateAroundX(Math.PI/2);
+                Vector v = e.getVelocity();
+                double vYaw = Math.atan2(v.getX(), v.getZ());
+                double vPitch = Math.atan2(v.getX(), v.getY());
+                pointPos.rotateAroundY(vYaw);
+                pointPos.rotateAroundX(vPitch);
+            } else {
+                pointPos = rotateY(pointPos, yaw);
+            }
 
             Vector pos = pointPos.add(loc.toVector());
 
@@ -192,12 +220,11 @@ public class AnimUtils {
 
     private static Vector rotateY(Vector vector, double angle) { // angle in radians
 
-        float x1 = (float)(vector.getX() * Math.cos(angle) - vector.getZ() * Math.sin(angle));
+        float x1 = (float) (vector.getX() * Math.cos(angle) - vector.getZ() * Math.sin(angle));
 
-        float z1 = (float)(vector.getX() * Math.sin(angle) + vector.getZ() * Math.cos(angle)) ;
+        float z1 = (float) (vector.getX() * Math.sin(angle) + vector.getZ() * Math.cos(angle));
 
         return new Vector(x1, vector.getY(), z1);
 
     }
 }
-

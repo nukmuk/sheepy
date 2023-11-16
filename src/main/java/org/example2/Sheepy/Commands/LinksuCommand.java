@@ -12,8 +12,9 @@ public class LinksuCommand implements CommandExecutor {
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
 
         if (args.length >= 1 && args[0].equals("reload")) {
-            LinksuJump.reloadPlugin();
+            LinksuJump.getPlugin().reloadConfig();
             sender.sendMessage(ChatColor.GREEN + "[linksujump] reloading config failed successfully");
+            LinksuJump.getPlugin().onEnable();
             return true;
         }
         return false;

@@ -1,4 +1,5 @@
 plugins {
+    id 'com.github.johnrengelman.shadow' version '8.1.1'
     id 'java'
 }
 
@@ -19,13 +20,20 @@ repositories {
 
 dependencies {
     compileOnly "io.papermc.paper:paper-api:1.20.2-R0.1-SNAPSHOT"
-    implementation 'de.javagl:obj:0.4.0'
+//    implementation 'de.javagl:obj:0.4.0'
+//    implementation group: 'org.ejml', name: 'ejml-all', version: '0.43'
 }
 
 jar {
     // Change the destination directory to the "plugins" folder
     destinationDirectory = file('F:\\Servers\\dev\\plugins')
-//    archiveFileName = 'your-plugin.jar' // Optional, specify the desired JAR file name
+    archiveFileName = 'LinksuJump.jar' // Optional, specify the desired JAR file name
+}
+
+shadowJar {
+    // Change the destination directory to the "plugins" folder
+    destinationDirectory = file('F:\\Servers\\dev\\plugins')
+    archiveFileName = 'LinksuJump.jar' // Optional, specify the desired JAR file name
 }
 
 def targetJavaVersion = 17

@@ -18,9 +18,8 @@ public final class LinksuJump extends JavaPlugin {
         saveConfig();
         Objects.requireNonNull(getCommand("linksu")).setExecutor(new LinksuCommand());
 
-        reloadPlugin();
-
         getServer().getPluginManager().registerEvents(new JumpListener(), this);
+        getServer().getPluginManager().registerEvents(new ThrowEvent(), this);
 
         AnimUtils.loadAnimations();
     }
@@ -34,8 +33,4 @@ public final class LinksuJump extends JavaPlugin {
         return plugin;
     }
 
-    public static void reloadPlugin() {
-        plugin.reloadConfig();
-        JumpListener.reloadConfig();
-    }
 }
