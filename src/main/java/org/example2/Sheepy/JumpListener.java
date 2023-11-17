@@ -1,32 +1,31 @@
 package org.example2.Sheepy;
 
-import io.papermc.paper.event.entity.EntityMoveEvent;
-import org.bukkit.Color;
-import org.bukkit.Material;
-import org.bukkit.Particle;
-import org.bukkit.Sound;
+import org.bukkit.*;
+import org.bukkit.block.BlockFace;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.Vector;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class JumpListener implements Listener {
 
     static FileConfiguration config = LinksuJump.getPlugin().getConfig();
-    private final List<Entity> flying = new ArrayList<>();
+    private final List<Entity> flying = Collections.synchronizedList(new ArrayList<>());
 
     @EventHandler
-    public void onPlayerMove(EntityMoveEvent e) {
-        Entity p = e.getEntity();
-        float blockOffset = (float) config.getDouble("block-offset");
-        boolean below = (e.getTo().clone().add(0, -blockOffset, 0).getBlock().getType() == Material.SLIME_BLOCK);
-        boolean above = (e.getTo().clone().add(0, 2+blockOffset, 0).getBlock().getType() == Material.SLIME_BLOCK);
+    public void onPlayerMove(PlayerMoveEvent e) {
+        Player p = e.getPlayer();
+        boolean below = (e.getTo().getBlock().getRelative(BlockFace.DOWN).getType() == Material.SLIME_BLOCK);
+        boolean above = (e.getTo().getBlock().getRelative(BlockFace.UP, 2).getType() == Material.SLIME_BLOCK);
         if (!below && !above) return;
         if (flying.contains(p)) return;
 
@@ -62,7 +61,7 @@ public class JumpListener implements Listener {
 //                Color color1 = Color.fromRGB(color.getRed(), color.getGreen(), color.getBlue());
                 Color color1 = colors[counter % colors.length];
                 Particle.DustOptions dustOptions = new Particle.DustOptions(color1, 1);
-                p.getWorld().spawnParticle(Particle.REDSTONE, p.getLocation(), (int) Math.pow(max - counter, 2)/max, 0.5, 0.5, 0.5, dustOptions);
+                p.getWorld().spawnParticle(Particle.REDSTONE, p.getLocation(), (int) Math.pow(max - counter, 2) / max, 0.5, 0.5, 0.5, dustOptions);
                 counter++;
             }
         }.runTaskTimerAsynchronously(LinksuJump.getPlugin(), 0L, 1L);
