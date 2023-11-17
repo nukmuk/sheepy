@@ -1,14 +1,14 @@
 package org.example2.Sheepy;
 
+import io.papermc.paper.event.entity.EntityMoveEvent;
 import org.bukkit.Color;
 import org.bukkit.Material;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
 import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.entity.Player;
+import org.bukkit.entity.Entity;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.Vector;
@@ -19,11 +19,11 @@ import java.util.List;
 public class JumpListener implements Listener {
 
     static FileConfiguration config = LinksuJump.getPlugin().getConfig();
-    private final List<Player> flying = new ArrayList<>();
+    private final List<Entity> flying = new ArrayList<>();
 
     @EventHandler
-    public void onPlayerMove(PlayerMoveEvent e) {
-        Player p = e.getPlayer();
+    public void onPlayerMove(EntityMoveEvent e) {
+        Entity p = e.getEntity();
         float blockOffset = (float) config.getDouble("block-offset");
         boolean below = (e.getTo().clone().add(0, -blockOffset, 0).getBlock().getType() == Material.SLIME_BLOCK);
         boolean above = (e.getTo().clone().add(0, 2+blockOffset, 0).getBlock().getType() == Material.SLIME_BLOCK);

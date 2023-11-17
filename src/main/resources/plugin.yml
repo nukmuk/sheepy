@@ -7,3 +7,7 @@ commands:
     usage: '/linksu reload'
     aliases:
       - linksujump
+permissions:
+  linksujump.linksu:
+    description: use egg and arrow
+    default: op
