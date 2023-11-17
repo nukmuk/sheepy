@@ -25,7 +25,7 @@ dependencies {
 jar {
     // Change the destination directory to the "plugins" folder
     destinationDirectory = file('F:\\Servers\\dev\\plugins')
-//    archiveFileName = 'your-plugin.jar' // Optional, specify the desired JAR file name
+    archiveFileName = 'Sheepy.jar' // Optional, specify the desired JAR file name
 }
 
 def targetJavaVersion = 17
