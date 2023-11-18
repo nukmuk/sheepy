@@ -15,5 +15,6 @@ commands:
 #      - l
   stream:
     description: stream from file
+    usage: "/stream <file> [particle scale] [animation scale] [particle type] [particles per tick]"
     aliases:
       - st

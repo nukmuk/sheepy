@@ -17,7 +17,7 @@ public final class Sheepy extends JavaPlugin {
 //        Objects.requireNonNull(getCommand("load")).setExecutor(new LoadCommand());
         Objects.requireNonNull(getCommand("stream")).setExecutor(new StreamBytesCommand());
 
-        animFileNames = getCsvFileNames();
+        animFileNames = getAnimFileNames();
 
         Objects.requireNonNull(getCommand("stream")).setTabCompleter(new StreamTabCompleter());
 
@@ -31,15 +31,16 @@ public final class Sheepy extends JavaPlugin {
 //        getLogger().info("loaded " + anims.size() + " anims");
     }
 
-    private List<String> getCsvFileNames() {
+    private List<String> getAnimFileNames() {
         List<File> animFiles = List.of(Objects.requireNonNull(getDataFolder().listFiles()));
+        String extension = ".shny";
         animFiles = animFiles.stream()
                 .filter(File::isFile)
-                .filter(file -> file.getName().endsWith(".shny"))
+                .filter(file -> file.getName().endsWith(extension))
                 .toList();
 
         return animFiles.stream()
-                .map(file -> file.getName().substring(0, file.getName().length() - 5))
+                .map(file -> file.getName().substring(0, file.getName().length() - extension.length()))
                 .toList();
     }
 

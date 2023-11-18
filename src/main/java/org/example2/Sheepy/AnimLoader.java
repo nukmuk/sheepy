@@ -83,8 +83,8 @@ public class AnimLoader {
             br.close();
         } catch (Exception e) {
             // send message to minecraft console
-            plugin.getLogger().info("error reading csv file");
-            plugin.getLogger().info(e.toString());
+            plugin.getLogger().info("error reading file");
+//            plugin.getLogger().info(e.toString());
         }
         return frames;
     }

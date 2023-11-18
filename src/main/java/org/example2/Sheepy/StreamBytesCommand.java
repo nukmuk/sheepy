@@ -66,7 +66,21 @@ public class StreamBytesCommand implements CommandExecutor {
         stopParticleTasks();
 
         String fileName = args[0].replaceAll("[^a-zA-Z0-9]", "") + ".shny";
-        ParticleType particleType = args.length > 3 ? ParticleType.valueOf(args[3]) : ParticleType.REDSTONE;
+//        ParticleType particleType = args.length > 3 ? ParticleType.valueOf(args[3]) : ParticleType.REDSTONE;
+        ParticleType particleType = args.length > 3 ? switch (args[3]) {
+            case "REDSTONE" -> ParticleType.REDSTONE;
+            case "SPELL_MOB" -> ParticleType.SPELL_MOB;
+            case "SPELL_MOB_AMBIENT" -> ParticleType.SPELL_MOB_AMBIENT;
+            case "DUST_TRANSITION" -> ParticleType.DUST_TRANSITION;
+            case "multiple_dust" -> ParticleType.multiple_dust;
+
+            default -> null;
+        } : ParticleType.REDSTONE;
+
+        if (particleType == null) {
+            sender.sendMessage(ChatColor.RED + "invalid particle type: " + args[3]);
+            return true;
+        }
 
 
         // particle attrib: float/color/byte
@@ -139,12 +153,13 @@ public class StreamBytesCommand implements CommandExecutor {
                     animation.dontLoad = true;
                 } catch (Exception e) {
 //                    Bukkit.getLogger().info(e.toString());
+                    animation.dontLoad = true;
                     sender.sendMessage(ChatColor.RED + "error streaming file: " + e);
                 }
             }
         }.runTaskAsynchronously(plugin);
 
-        return false;
+        return true;
     }
 
     static void playFrame(AnimationParticle[] frame, @NotNull String[] args, Location loc, ParticleType particleType) {
@@ -153,13 +168,24 @@ public class StreamBytesCommand implements CommandExecutor {
             World world = loc.getWorld();
 
             Color color = p.color;
-            float custom_pscale = args.length > 1 ? Float.parseFloat(args[1]) : 1f;
+            float pscale_multiplier = 1f;
+            try {
+                if (args.length > 1)
+                    pscale_multiplier = Float.parseFloat(args[1]);
+            } catch (Exception ignored) {
+            }
             float pscale = Byte.toUnsignedInt(p.pscale);
             pscale = (pscale + 1) / 64;
-            pscale *= custom_pscale;
+            pscale *= pscale_multiplier;
             Particle.DustOptions dustOptions = new Particle.DustOptions(color, pscale);
 
-            float scale = args.length > 2 ? Float.parseFloat(args[2]) : 1f;
+            float scale = 1f;
+
+            try {
+                if (args.length > 2)
+                    scale = Float.parseFloat(args[2]);
+            } catch (Exception ignored) {
+            }
 
             Vector pointPos = new Vector(p.position[0], p.position[1], p.position[2]).multiply(scale);
             Vector pos = pointPos.add(loc.toVector());
@@ -172,8 +198,12 @@ public class StreamBytesCommand implements CommandExecutor {
                 case multiple_dust:
                     // spawn ~16k particles total every tick so previous frames disappear
                     int particlesPerTick = 8000;
-                    int total = args.length > 4 ? Integer.parseInt(args[4]) : particlesPerTick;
-                    int amount = Math.floorDiv(total, frame.length);
+                    try {
+                        if (args.length > 4)
+                            particlesPerTick = Integer.parseInt(args[4]);
+                    } catch (Exception ignored) {
+                    }
+                    int amount = Math.floorDiv(particlesPerTick, frame.length);
                     world.spawnParticle(Particle.REDSTONE, pos.toLocation(world), amount, 0, 0, 0, 1, dustOptions, true);
                     break;
 
@@ -190,8 +220,6 @@ public class StreamBytesCommand implements CommandExecutor {
                     world.spawnParticle(Particle.DUST_COLOR_TRANSITION, pos.toLocation(world), 0, dustTransition);
                     break;
             }
-
-
         }
     }
 
