@@ -65,7 +65,7 @@ public class StreamBytesCommand implements CommandExecutor {
 
         stopParticleTasks();
 
-        String fileName = args[0].replaceAll("[^a-zA-Z0-9]", "") + ".bin";
+        String fileName = args[0].replaceAll("[^a-zA-Z0-9]", "") + ".shny";
         ParticleType particleType = args.length > 3 ? ParticleType.valueOf(args[3]) : ParticleType.REDSTONE;
 
 
@@ -75,7 +75,7 @@ public class StreamBytesCommand implements CommandExecutor {
         // animation:       Queue<AnimationParticle[]>
 
         BlockingQueue<AnimationParticle[]> frames = new ArrayBlockingQueue<>(1); // smaller numbers seem to have better performance
-        Location loc = PlayCommand.getLocation(sender);
+        Location loc = getLocation(sender);
         Animation animation = new Animation(frames);
         animations.add(animation);
 
@@ -138,7 +138,7 @@ public class StreamBytesCommand implements CommandExecutor {
                     }
                     animation.dontLoad = true;
                 } catch (Exception e) {
-                    Bukkit.getLogger().info(e.toString());
+//                    Bukkit.getLogger().info(e.toString());
                     sender.sendMessage(ChatColor.RED + "error streaming file: " + e);
                 }
             }
@@ -193,6 +193,16 @@ public class StreamBytesCommand implements CommandExecutor {
 
 
         }
+    }
+
+    static Location getLocation(CommandSender sender) {
+        Vector offset = new Vector(0.5, 1, 0.5);
+        if (sender instanceof Player player) {
+            return player.getTargetBlock(null, 64).getLocation().add(offset);
+        } else if (sender instanceof BlockCommandSender blockCommandSender) {
+            return blockCommandSender.getBlock().getLocation().add(offset);
+        }
+        return null;
     }
 
     static void playFrame(AnimationParticle[] frame, @NotNull String[] args, Location loc) {

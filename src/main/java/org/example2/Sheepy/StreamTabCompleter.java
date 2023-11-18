@@ -16,9 +16,9 @@ public class StreamTabCompleter implements TabCompleter {
         return switch (args.length) {
             case 1 -> Sheepy.animFileNames;
             case 2, 3 -> List.of("0.5", "1.0", "2.0");
-            case 4 -> Arrays.stream(StreamCommand.ParticleType.values()).map(Enum::toString).collect(Collectors.toList());
+            case 4 -> Arrays.stream(StreamBytesCommand.ParticleType.values()).map(Enum::toString).collect(Collectors.toList());
             case 5 -> {
-                if (args[3].equals(StreamCommand.ParticleType.multiple_dust.toString())) yield List.of("4000", "8000", "16000");
+                if (args[3].equals(StreamBytesCommand.ParticleType.multiple_dust.toString())) yield List.of("4000", "8000", "16000");
                 else yield new ArrayList<>();
             }
             default -> new ArrayList<>();

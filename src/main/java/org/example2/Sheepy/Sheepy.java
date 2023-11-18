@@ -35,10 +35,11 @@ public final class Sheepy extends JavaPlugin {
         List<File> animFiles = List.of(Objects.requireNonNull(getDataFolder().listFiles()));
         animFiles = animFiles.stream()
                 .filter(File::isFile)
+                .filter(file -> file.getName().endsWith(".shny"))
                 .toList();
 
         return animFiles.stream()
-                .map(file -> file.getName().substring(0, file.getName().length() - 4))
+                .map(file -> file.getName().substring(0, file.getName().length() - 5))
                 .toList();
     }
 
