@@ -1,6 +1,5 @@
 package org.example2.Sheepy;
 
-import org.bukkit.Bukkit;
 import org.bukkit.entity.Arrow;
 import org.bukkit.entity.Egg;
 import org.bukkit.entity.Player;
@@ -19,10 +18,9 @@ public class ThrowEvent implements Listener {
     public void onProjectileLaunch(ProjectileLaunchEvent e) {
 
         if (!(e.getEntity() instanceof Arrow) && !(e.getEntity() instanceof Egg)) return;
-        Bukkit.getLogger().info(e.getEntity().getShooter().toString());
         if (!(e.getEntity().getShooter() instanceof Player) && !(e.getEntity().getShooter() instanceof BlockProjectileSource)) return;
         if (e.getEntity() instanceof Player) if (!(((Player) e.getEntity().getShooter()).hasPermission("linksujump.linksu"))) return;
-        if (flying) return;
+        if (!LinksuJump.unlimitedAnimations) if (flying) return;
 
         flying = true;
 //        new BukkitRunnable() {

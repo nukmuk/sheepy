@@ -10,6 +10,7 @@ public final class LinksuJump extends JavaPlugin {
 
     private final FileConfiguration config = getConfig();
     private static LinksuJump plugin;
+    public static boolean unlimitedAnimations;
 
     @Override
     public void onEnable() {

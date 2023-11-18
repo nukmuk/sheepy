@@ -4,7 +4,7 @@ main: org.example2.Sheepy.LinksuJump
 api-version: '1.20'
 commands:
   linksu:
-    usage: '/linksu reload'
+    usage: '/linksu <reload/limit>'
     aliases:
       - linksujump
 permissions:
