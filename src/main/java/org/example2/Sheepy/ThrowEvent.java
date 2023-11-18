@@ -18,8 +18,11 @@ public class ThrowEvent implements Listener {
     public void onProjectileLaunch(ProjectileLaunchEvent e) {
 
         if (!(e.getEntity() instanceof Arrow) && !(e.getEntity() instanceof Egg)) return;
-        if (!(e.getEntity().getShooter() instanceof Player) && !(e.getEntity().getShooter() instanceof BlockProjectileSource)) return;
-        if (e.getEntity() instanceof Player) if (!(((Player) e.getEntity().getShooter()).hasPermission("linksujump.linksu"))) return;
+        if (!(e.getEntity().getShooter() instanceof Player) && !(e.getEntity().getShooter() instanceof BlockProjectileSource))
+            return;
+
+        if (e.getEntity().getShooter() instanceof Player)
+            if (!((Player) e.getEntity().getShooter()).hasPermission("linksujump.projectile")) return;
         if (!LinksuJump.unlimitedAnimations) if (flying) return;
 
         flying = true;

@@ -5,9 +5,14 @@ api-version: '1.20'
 commands:
   linksu:
     usage: '/linksu <reload/limit>'
+    permission: "linksujump.linksu"
     aliases:
       - linksujump
+
 permissions:
-  linksujump.linksu:
+  linksujump.projectile:
     description: use egg and arrow
+    default: op
+  linksujump.linksu:
+    description: use command
     default: op
