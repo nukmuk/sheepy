@@ -57,3 +57,5 @@ FF
 FF 00 FF
 FF
 ```
+
+### Inspired by https://www.youtube.com/watch?v=iwhotujrJqE
