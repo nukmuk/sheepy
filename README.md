@@ -2,7 +2,7 @@ https://github.com/nukmuk/mc-3d-animation-gyatt-particle/assets/10235825/b6bb527
 
 How this example dance video was created:
 1. Export alembic from MMD using [MMDBridge](https://github.com/uimac/mmdbridge)
-2. Import into Houdini, scatter points on the surface of the mesh using a random seed every frame, change FPS to 20 since Minecraft runs at 20 ticks/second
+2. Import into Houdini, scatter points on the surface of the mesh, change FPS to 20 since Minecraft runs at 20 ticks/second
 3. Use the script in my Houdini Digital Asset to export the points to .shny file
 4. Play animation in-game
 
