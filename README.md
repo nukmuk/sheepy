@@ -64,4 +64,19 @@ FF 00 FF
 FF
 ```
 
+### More detailed steps on how the example was made
+
+1. Import .abc file, set "Load As" to "Unpack Alembic Delayed Load Primitives". Set Project Animation FPS to 20.
+2. Copy the alembic node as many times as the object has materials. For example, if model has 33 materials, make 33 alembic nodes.
+3. For each node under "Selection" tab, for "Object Path" choose a single material. (or multiple materials if you know they are using the same textures) 
+4. Connect each alembic node to an attribexpression node. Set "Attribute" to "Texture (uv)", "Constant Value" to 1 1 1, "VEXpression" to "self % value". This clamps/wraps the UVs to 0-1.
+5. Connect those to attribfrommap nodes and put the correct texture in the "Texture Map" field. You can find the right texture for each material by opening "alembic_file.mtl" exported from MMDBridge in Notepad.
+6. Connect all of those to a merge node.
+7. Connect to scatter node to create the particles. "Force Total Count" is how many particles are generated every frame/tick. In my testing 500-2000 gives ok performance with 1 player on the server. Set "Global Seed" to "$F" to randomize the particle positions every frame.
+8. Set "pscale" with attribcreate node to change the size of the particles. I used about 0.015.
+9. Connect to my exporter node, set file path, start and end frames correctly and export.
+
+You can also use my example.hip file
+
 ### Inspired by https://www.youtube.com/watch?v=iwhotujrJqE
+
