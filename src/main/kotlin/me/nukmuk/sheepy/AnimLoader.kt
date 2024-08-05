@@ -7,14 +7,14 @@ import java.io.FileReader
 
 class AnimLoader(private val plugin: Sheepy) {
 
-    fun listAnims(folderName: String): List<File>? {
+    fun getAnimsInFolder(folderName: String = ""): List<File>? {
         val pluginFolder = plugin.dataFolder
-        val animFolder = File(pluginFolder, folderName)
+        val sanitizedFolderName = folderName.replace(Regex("[^a-zA-Z0-9_-]"), "")
+        val animFolder = File(pluginFolder, sanitizedFolderName)
 
-        val files = animFolder.listFiles()
+        val files = animFolder.listFiles()?.filter { file -> file.extension == Config.FILE_EXTENSION }
 
-        return files?.toList();
-
+        return files?.toList()
     }
 
     fun loadAnimFile(fileName: String): List<List<FloatArray>> {

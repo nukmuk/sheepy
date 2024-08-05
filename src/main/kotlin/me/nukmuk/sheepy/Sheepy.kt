@@ -9,10 +9,6 @@ class Sheepy : JavaPlugin() {
 
     override fun onEnable() {
         // Plugin startup logic
-
-        //Auto reload
-        val lastModified = file.lastModified()
-
         getCommand("sheepy")?.setExecutor(SheepyCommand(this));
 
     }

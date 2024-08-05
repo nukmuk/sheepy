@@ -67,7 +67,7 @@ class StreamBytesCommand : CommandExecutor {
             return true
         }
 
-
+        // data types explained
         // particle attrib: float/color/byte
         // particle:        AnimationParticle
         // frame:           AnimationParticle[]
