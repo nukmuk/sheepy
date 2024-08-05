@@ -1,6 +1,7 @@
 package me.nukmuk.sheepy
 
 import com.destroystokyo.paper.MaterialSetTag
+import org.bukkit.Bukkit
 import org.bukkit.ChatColor
 import org.bukkit.Material
 import org.bukkit.Particle
@@ -33,24 +34,21 @@ class SheepyCommand(private val plugin: Sheepy) : CommandExecutor, TabCompleter 
         val subcommand = args[0]
 
         if (subcommand == "test") {
-            try {
-
-            } catch (error: Exception) {
-                plugin.logger.info(error.message)
-            }
+            /*
             for (i in 1..10000) {
-                player.spawnParticle(
+                player.world.spawnParticle(
                     Particle.CLOUD,
-                    player.location.add(Vector(i * 0.003, 0.0, 0.0)),
+                    player.location.add(Vector(i * 0.003, 2.0, 0.0)),
                     0,
-                    -1.0,
                     0.0,
                     0.0,
-                    i.toDouble() / 10000,
-                    null,
-                    false
+                    0.0,
                 )
             }
+             */
+            val sch = Bukkit.getScheduler()
+            Utils.sendMessage(player, "active workers ${sch.activeWorkers}, pending ${sch.pendingTasks}")
+
             return true
         } else if (subcommand == "list") {
             val folderName = args.getOrNull(1) ?: ""
@@ -75,14 +73,15 @@ class SheepyCommand(private val plugin: Sheepy) : CommandExecutor, TabCompleter 
 
             Utils.sendMessage(player, "Streaming file $file")
 
-            val animation = Animation(file, player, plugin, player.getTargetBlock(null, 10).location.add(0.0, 1.0, 0.0))
+            val animation =
+                Animation(file, player, plugin, player.getTargetBlock(null, 10).location.add(0.0, 1.0, 0.0), animations)
             animation.start()
             animations.add(animation)
 
         } else if (subcommand == "stop") {
             Utils.sendMessage(player, "stopping ${animations.size}")
-            animations.forEach { it.stop(); animations.remove(it) }
-            Utils.sendMessage(player, "stopped, now running ${animations.size}")
+            animations.removeAll { it.stop(); true }
+            Utils.sendMessage(player, "removed, now running ${animations.size}")
         }
         return false
     }
