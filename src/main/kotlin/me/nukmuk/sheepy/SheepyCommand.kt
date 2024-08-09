@@ -73,7 +73,7 @@ class SheepyCommand(private val plugin: Sheepy) : CommandExecutor, TabCompleter 
                 return true
             }
 
-            Utils.sendMessage(player, "Streaming file ${Config.VAR_COLOR}$file")
+            Utils.sendMessage(player, "Loaded file ${Config.VAR_COLOR}$file")
 
             val animation =
                 Animation(file, player, plugin, player.getTargetBlock(null, 10).location.add(0.0, 1.0, 0.0), animations)
@@ -85,11 +85,43 @@ class SheepyCommand(private val plugin: Sheepy) : CommandExecutor, TabCompleter 
             animations.put(animation.name, animation)
 
             return true
-        } else if (subcommand == "stop") {
+        } else if (subcommand == "remove" || subcommand == "rm") {
+            val animationName = args.getOrNull(1)
+            if (animationName == null) return false
+
+            val removedAnimation = animations.remove(animationName)
+            if (removedAnimation != null) {
+                removedAnimation.stop()
+                Utils.sendMessage(player, "Removed and stopped ${Config.VAR_COLOR}${removedAnimation.name}")
+            } else {
+                Utils.sendMessage(player, "No animation ${Config.VAR_COLOR}${animationName}")
+            }
+            return true
+        } else if (subcommand == "clear") {
             Utils.sendMessage(player, "stopping ${Config.VAR_COLOR}${animations.size}")
             animations.forEach { it.value.stop() }
             animations.clear()
             Utils.sendMessage(player, "removed, now running ${Config.VAR_COLOR}${animations.size}")
+            return true
+
+        } else if (subcommand == "stop" || subcommand == "pause" || subcommand == "start") {
+            val animationName = Utils.sanitizeString(args.getOrNull(1))
+
+            if (animationName == null) return false
+            val animation = animations[animationName]
+            if (animation == null) {
+                Utils.sendMessage(player, "No animation ${Config.VAR_COLOR}$animationName")
+                return true
+            }
+
+            if (subcommand == "stop" || subcommand == "pause") {
+                animation.stop()
+                Utils.sendMessage(player, "paused ${Config.VAR_COLOR}${animation.name}")
+            } else {
+                animation.start()
+                Utils.sendMessage(player, "started ${Config.VAR_COLOR}${animation.name}")
+            }
+
             return true
         } else if (subcommand == "step") {
             if (animations.isEmpty) {

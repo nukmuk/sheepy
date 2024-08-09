@@ -51,7 +51,7 @@ class Animation(
     }
 
     fun stop() {
-        player?.let { Utils.sendMessage(it, "stopping task $task") }
+        player?.let { Utils.sendMessage(it, "stopping animation $name") }
         task?.cancel()
         task = null
     }
