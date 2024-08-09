@@ -9,6 +9,7 @@ import org.bukkit.World
 import org.bukkit.entity.Player
 import org.bukkit.scheduler.BukkitRunnable
 import org.bukkit.scheduler.BukkitTask
+import org.bukkit.util.Vector
 import java.io.File
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
@@ -19,7 +20,7 @@ class Animation(
     val player: Player?,
     val plugin: Sheepy,
     var location: Location,
-    val animations: ArrayList<Animation>
+    val animations: HashMap<String, Animation>
 ) {
 
     val world: World
@@ -32,139 +33,94 @@ class Animation(
     val fileBytes = Files.readAllBytes(file.toPath())
     val bb = ByteBuffer.wrap(fileBytes).order(ByteOrder.LITTLE_ENDIAN)
 
+    var i = 0
+
+    val name: String
+        get() = file.nameWithoutExtension
+
     fun start() {
         // particle spawner & reader
         task = object : BukkitRunnable() {
-            var i = 0
 
             override fun run() {
-
-                var frame = Frame(arrayOf<AnimationParticle?>())
-
-                try {
-                    if (bb.hasRemaining()) {
-                        val length = bb.getShort().toInt()
-
-                        frame = Frame(arrayOfNulls<AnimationParticle>(length))
-
-                        // loop over particles and add them to frame
-                        for (i in 0 until length) {
-                            frame.animationParticles[i] = AnimationParticle(
-                                x = getPosComponent(bb),
-                                y = getPosComponent(bb),
-                                z = getPosComponent(bb),
-                                color = Color.fromARGB(bb.getInt()),
-                            )
-                        }
-                        Utils.sendMessage(
-                            player!!,
-                            "read frame with length ${frame.animationParticles.size}, remaining: ${bb.hasRemaining()}"
-                        )
-                    } else {
-                        this.cancel()
-                        task = null
-                        animations.remove<Animation>(currentAnimation)
-                        return
-                    }
-                } catch (e: Exception) {
-                    if (player != null) {
-                        Utils.sendMessage(player, "${ChatColor.RED}error streaming file: ${e.message}")
-                    }
-                }
-
-
-                val p1 = frame.animationParticles.getOrNull(0)
-                player?.sendActionBar(Component.text("${ChatColor.GRAY}size of frame in queue: ${frame.animationParticles.size}, running for: ${i}, pos: ${p1?.x?.toInt()}, ${p1?.y?.toInt()}, ${p1?.z?.toInt()}"))
-                i++
-                Utils.sendMessage(player!!, "playing frame")
-                playFrame(frame, location)
-                Utils.sendMessage(player, "played")
-
-
-            }
-
-            fun playFrame(frame: Frame, loc: Location) {
-                for (p in frame.animationParticles) {
-                    if (p == null) continue
-                    world.spawnParticle(
-                        Particle.DUST,
-                        location.x + p.x,
-                        location.y + p.y,
-                        location.z + p.z,
-                        1,
-                        0.0,
-                        0.0,
-                        0.0,
-                        0.0,
-                        Particle.DustOptions(p.color, p.scale.toFloat() / 255 * 1)
-                    )
-                }
-            }
-
-            fun getPosComponent(bb: ByteBuffer): Float {
-                val posComponent = bb.getShort()
-                val posComponentFloat = Utils.convertToFloat(posComponent.toInt())
-                return posComponentFloat
+                step()
             }
 
         }.runTaskTimerAsynchronously(plugin, 0L, 1L)
 
-
-        // file loader
-        /*
-        val loaderTask = object : BukkitRunnable() {
-            override fun run() {
-                try {
-                    val fileBytes = Files.readAllBytes(file.toPath())
-                    val bb = ByteBuffer.wrap(fileBytes)
-                    bb.order(ByteOrder.LITTLE_ENDIAN)
-
-
-
-                    while (bb.hasRemaining() && !shouldStop) {
-                        val length = bb.getShort()
-//                        val frame = arrayOfNulls<Particle>(length.toInt())
-                        val frame = Frame(arrayOfNulls<AnimationParticle>(length.toInt()))
-
-                        // loop over particles and add them to frame
-                        for (i in 0 until length) {
-                            frame.animationParticles[i] = AnimationParticle(
-                                x = getPosComponent(bb),
-                                y = getPosComponent(bb),
-                                z = getPosComponent(bb),
-                                color = Color.fromARGB(bb.getInt()),
-                            )
-                        }
-                        frames.put(frame)
-                        Utils.sendMessage(
-                            player!!,
-                            "read frame with length ${frame.animationParticles.size}, remaining: ${bb.hasRemaining()}"
-                        )
-                    }
-                    shouldStop = true
-                } catch (e: Exception) {
-                    shouldStop = true
-                    if (player != null) {
-                        Utils.sendMessage(player, "${ChatColor.RED}error streaming file: $e")
-                    }
-                }
-            }
-
-            fun getPosComponent(bb: ByteBuffer): Float {
-                val posComponent = bb.getShort()
-                val posComponentFloat = Utils.convertToFloat(posComponent.toInt())
-                return posComponentFloat
-            }
-        }.runTaskAsynchronously(plugin)
-
-        tasks.add(loaderTask)
-         */
     }
 
     fun stop() {
         player?.let { Utils.sendMessage(it, "stopping task $task") }
         task?.cancel()
         task = null
+    }
+
+    fun step() {
+        var frame: Frame
+
+        if (bb.hasRemaining()) {
+            val length = bb.getShort().toInt()
+
+            frame = Frame(arrayOfNulls<AnimationParticle>(length))
+
+            // loop over particles and add them to frame
+            for (i in 0 until length) {
+                frame.animationParticles[i] = AnimationParticle(
+                    x = getPosComponent(bb),
+                    y = getPosComponent(bb),
+                    z = getPosComponent(bb),
+                    color = Color.fromARGB(bb.getInt()),
+                )
+            }
+            Utils.sendMessage(
+                player!!,
+                "read frame with length ${frame.animationParticles.size}, remaining: ${bb.hasRemaining()}"
+            )
+        } else {
+            task?.cancel()
+            task = null
+            animations.remove(currentAnimation.name)
+            return
+        }
+
+
+        val p1 = frame.animationParticles.getOrNull(0)
+
+        val p1pos: Vector = p1?.let { p ->
+            Vector(p.x + location.x, p.y + location.y, p.z + location.z)
+        } ?: Vector(0, 0, 0)
+
+        player.sendActionBar(Component.text("${ChatColor.GRAY}particles in current frame: ${frame.animationParticles.size}, running for: ${i}, pos: ${p1pos.x.toInt()}, ${p1pos.y.toInt()}, ${p1pos.z.toInt()}"))
+        i++
+//        Utils.sendMessage(player, "playing frame")
+        playFrame(frame, location)
+//        Utils.sendMessage(player, "played")
+
+    }
+
+    private fun playFrame(frame: Frame, loc: Location) {
+        for (p in frame.animationParticles) {
+            if (p == null) continue
+            world.spawnParticle(
+                Particle.DUST,
+                location.x + p.x,
+                location.y + p.y,
+                location.z + p.z,
+                1,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                Particle.DustOptions(p.color, p.scale.toFloat() / 255 * 3)
+            )
+        }
+    }
+
+    private fun getPosComponent(bb: ByteBuffer): Float {
+        val posComponent = bb.getShort()
+        val posComponentFloat = Utils.convertToFloat(posComponent.toInt())
+        return posComponentFloat
     }
 }
 

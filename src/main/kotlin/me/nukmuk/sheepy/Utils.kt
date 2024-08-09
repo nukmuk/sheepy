@@ -2,10 +2,11 @@ package me.nukmuk.sheepy
 
 import org.bukkit.ChatColor
 import org.bukkit.entity.Player
+import kotlin.text.replace
 
 object Utils {
     fun sendMessage(player: Player, message: String) {
-        player.sendMessage("${ChatColor.GREEN}[Sheepy] ${ChatColor.RESET}$message")
+        player.sendMessage("${ChatColor.GREEN}[Sheepy] ${Config.PRIMARY_COLOR}$message")
     }
 
     // from https://stackoverflow.com/a/6162687
@@ -34,5 +35,9 @@ object Utils {
             (hbits and 0x8000) shl 16 // sign  << ( 31 - 15 )
                     or ((exp or mant) shl 13)
         ) // value << ( 23 - 10 )
+    }
+
+    fun sanitizeString(s: String?): String? {
+        return s?.replace(Regex("[^a-zA-Z0-9_-]"), "")
     }
 }
