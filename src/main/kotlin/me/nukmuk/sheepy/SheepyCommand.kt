@@ -53,6 +53,7 @@ class SheepyCommand(private val plugin: Sheepy) : CommandExecutor, TabCompleter 
         } else if (subcommand == "stream" || subcommand == "st" || subcommand == "load") {
 
             val fileName = Utils.sanitizeString(args.getOrNull(1))
+            val repeat: Boolean = args.getOrNull(2) == "true"
 
             if (fileName == null) {
                 Utils.sendMessage(player, "Please provide filename")
@@ -73,10 +74,15 @@ class SheepyCommand(private val plugin: Sheepy) : CommandExecutor, TabCompleter 
                 return true
             }
 
-            Utils.sendMessage(player, "Loaded file ${Config.VAR_COLOR}$file")
+            var msg = "Created animationm with file ${Config.VAR_COLOR}${file.name}"
+            if (repeat) msg += "${Config.PRIMARY_COLOR}, repeat ${Config.VAR_COLOR}on"
+
+            Utils.sendMessage(player, msg)
 
             val animation =
-                Animation(file, player, plugin, player.getTargetBlock(null, 10).location.add(0.0, 1.0, 0.0))
+                Animation(file, player, plugin, player.getTargetBlock(null, 10).location.add(0.0, 1.0, 0.0), animations)
+
+            animation.repeat = repeat
 
             if (subcommand == "stream" || subcommand == "st") {
                 animation.start()
@@ -131,7 +137,7 @@ class SheepyCommand(private val plugin: Sheepy) : CommandExecutor, TabCompleter 
             }
             return true
         } else if (subcommand == "list" || subcommand == "ls") {
-            Utils.sendMessage(player, "Animations: ${Config.VAR_COLOR}${animations}")
+            Utils.sendMessage(player, "Animations: ${Config.VAR_COLOR}${animations.keys}")
             return true
         } else if (subcommand == "tasks") {
             Utils.sendMessage(player, "activeWorkers: ${Config.VAR_COLOR}${Bukkit.getScheduler().activeWorkers}")

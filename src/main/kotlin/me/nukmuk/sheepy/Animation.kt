@@ -8,7 +8,6 @@ import org.bukkit.Particle
 import org.bukkit.World
 import org.bukkit.entity.Player
 import org.bukkit.scheduler.BukkitRunnable
-import org.bukkit.scheduler.BukkitTask
 import org.bukkit.util.Vector
 import java.io.File
 import java.io.RandomAccessFile
@@ -20,14 +19,13 @@ import java.util.concurrent.atomic.AtomicBoolean
 class Animation(
     private val file: File,
     private val player: Player?,
-    private val plugin: Sheepy,
+    plugin: Sheepy,
     private var location: Location,
+    private val animations: HashMap<String, Animation>,
 ) {
 
     private val world: World
         get() = location.world
-
-    private val currentAnimation = this
 
     private val raf = RandomAccessFile(file, "r")
 
@@ -41,12 +39,17 @@ class Animation(
     lateinit var bytes: ByteArray
     lateinit var bb: ByteBuffer
 
+    var particleScale = 1.0f
+    var animationScale = 1.0f
+    var repeat = false
+
+
     private var task = object : BukkitRunnable() {
         var processing = false
         var shouldLoad = true
         var loading = false
         override fun run() {
-            player!!.sendActionBar("processing $processing, shouldLoad $shouldLoad, loading $loading, playing: ${playing.get()} i: $i")
+//            player!!.sendActionBar("processing $processing, shouldLoad $shouldLoad, loading $loading, playing: ${playing.get()} i: $i")
             if (processing || loading) return
             if (!playing.get()) return
             processing = true
@@ -55,12 +58,22 @@ class Animation(
                 shouldLoad = false
                 bytes = Files.readAllBytes(file.toPath())
                 bb = ByteBuffer.wrap(bytes).order(ByteOrder.LITTLE_ENDIAN)
-                Utils.sendMessage(player, "loaded ${bytes.size} bytes")
+                Utils.sendMessage(player!!, "loaded ${bytes.size} bytes")
                 loading = false
                 processing = false
                 return
             }
-            if (!bb.hasRemaining()) bb.position(0)
+            if (!bb.hasRemaining()) {
+                if (repeat) {
+                    bb.position(0)
+                } else {
+                    playing.set(false)
+                    processing = false
+                    remove()
+                    animations.remove(name)
+                    return
+                }
+            }
             step(bb)
             processing = false
         }
@@ -120,7 +133,7 @@ class Animation(
             Vector(p.x + location.x, p.y + location.y, p.z + location.z)
         } ?: Vector(0, 0, 0)
 
-//        player?.sendActionBar(Component.text("${ChatColor.GRAY}particles in current frame: ${frame.animationParticles.size}, running for: ${i}, pos: ${p1pos.x.toInt()}, ${p1pos.y.toInt()}, ${p1pos.z.toInt()}"))
+        player?.sendActionBar(Component.text("${ChatColor.GRAY}particles in current frame: ${frame.animationParticles.size}, running for: ${i}, pos: ${p1pos.x.toInt()}, ${p1pos.y.toInt()}, ${p1pos.z.toInt()}"))
         i++
         playFrame(frame, location)
     }
@@ -138,7 +151,7 @@ class Animation(
                 0.0,
                 0.0,
                 0.0,
-                Particle.DustOptions(p.color, p.scale.toFloat() / 255 * 3)
+                Particle.DustOptions(p.color, p.scale.toFloat() / 255 * particleScale)
             )
         }
     }
