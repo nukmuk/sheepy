@@ -15,60 +15,78 @@ import java.io.RandomAccessFile
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.nio.file.Files
+import java.util.concurrent.atomic.AtomicBoolean
 
 class Animation(
     private val file: File,
     private val player: Player?,
     private val plugin: Sheepy,
     private var location: Location,
-    private val animations: HashMap<String, Animation>
 ) {
 
     private val world: World
         get() = location.world
 
-    private var task: BukkitTask? = null
-
     private val currentAnimation = this
 
     private val raf = RandomAccessFile(file, "r")
 
-    private val fileBytes = Files.readAllBytes(file.toPath())
-    private val bb = ByteBuffer.wrap(fileBytes).order(ByteOrder.LITTLE_ENDIAN)
-
     private var i = 0
 
-    private var playing = false
+    private var playing = AtomicBoolean(false)
 
     val name: String
         get() = file.nameWithoutExtension
 
-    fun start() {
-        playing = true
-        task = object : BukkitRunnable() {
-            override fun run() {
-                step()
-            }
-        }.runTaskAsynchronously(plugin)
+    lateinit var bytes: ByteArray
+    lateinit var bb: ByteBuffer
 
+    private var task = object : BukkitRunnable() {
+        var processing = false
+        var shouldLoad = true
+        var loading = false
+        override fun run() {
+            player!!.sendActionBar("processing $processing, shouldLoad $shouldLoad, loading $loading, playing: ${playing.get()} i: $i")
+            if (processing || loading) return
+            if (!playing.get()) return
+            processing = true
+            if (shouldLoad) {
+                loading = true
+                shouldLoad = false
+                bytes = Files.readAllBytes(file.toPath())
+                bb = ByteBuffer.wrap(bytes).order(ByteOrder.LITTLE_ENDIAN)
+                Utils.sendMessage(player, "loaded ${bytes.size} bytes")
+                loading = false
+                processing = false
+                return
+            }
+            if (!bb.hasRemaining()) bb.position(0)
+            step(bb)
+            processing = false
+        }
+    }.runTaskTimerAsynchronously(plugin, 0L, 1L)
+
+
+    fun start() {
+        playing.set(true)
     }
 
     fun stop() {
-        player?.let { Utils.sendMessage(it, "stopping animation $name") }
-        playing = false
-        task?.cancel()
-        task = null
+        player?.let { Utils.sendMessage(it, "pausing animation $name") }
+        playing.set(false)
+    }
+
+    fun remove() {
+        player?.let { Utils.sendMessage(it, "removing animation $name") }
+        playing.set(false)
+        task.cancel()
     }
 
     fun stepFrame() {
-        if (playing) {
-            Utils.sendMessage(player!!, "can't step")
-            return
-        }
-        step()
+        Utils.sendMessage(player!!, "not implemented")
     }
 
-    private fun step() {
+    private fun step(bb: ByteBuffer) {
         var frame: Frame
 
         if (bb.hasRemaining()) {
@@ -88,11 +106,10 @@ class Animation(
 //            Utils.sendMessage(
 //                player!!,
 //                "read frame with length ${frame.animationParticles.size}, remaining: ${bb.hasRemaining()}"
-//            )§
+//            )
         } else {
-            task?.cancel()
-            task = null
-            animations.remove(currentAnimation.name)
+            playing.set(false)
+            Utils.sendMessage(player!!, "bytebuffer empty")
             return
         }
 
@@ -103,16 +120,9 @@ class Animation(
             Vector(p.x + location.x, p.y + location.y, p.z + location.z)
         } ?: Vector(0, 0, 0)
 
-        player.sendActionBar(Component.text("${ChatColor.GRAY}particles in current frame: ${frame.animationParticles.size}, running for: ${i}, pos: ${p1pos.x.toInt()}, ${p1pos.y.toInt()}, ${p1pos.z.toInt()}"))
+//        player?.sendActionBar(Component.text("${ChatColor.GRAY}particles in current frame: ${frame.animationParticles.size}, running for: ${i}, pos: ${p1pos.x.toInt()}, ${p1pos.y.toInt()}, ${p1pos.z.toInt()}"))
         i++
         playFrame(frame, location)
-
-        if (playing) object : BukkitRunnable() {
-            override fun run() {
-                step()
-            }
-
-        }.runTaskAsynchronously(plugin)
     }
 
     private fun playFrame(frame: Frame, loc: Location) {
@@ -120,9 +130,9 @@ class Animation(
             if (p == null) continue
             world.spawnParticle(
                 Particle.DUST,
-                location.x + p.x,
-                location.y + p.y,
-                location.z + p.z,
+                loc.x + p.x,
+                loc.y + p.y,
+                loc.z + p.z,
                 1,
                 0.0,
                 0.0,

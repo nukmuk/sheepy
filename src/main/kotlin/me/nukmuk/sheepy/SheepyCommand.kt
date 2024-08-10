@@ -76,7 +76,7 @@ class SheepyCommand(private val plugin: Sheepy) : CommandExecutor, TabCompleter 
             Utils.sendMessage(player, "Loaded file ${Config.VAR_COLOR}$file")
 
             val animation =
-                Animation(file, player, plugin, player.getTargetBlock(null, 10).location.add(0.0, 1.0, 0.0), animations)
+                Animation(file, player, plugin, player.getTargetBlock(null, 10).location.add(0.0, 1.0, 0.0))
 
             if (subcommand == "stream" || subcommand == "st") {
                 animation.start()
@@ -91,7 +91,7 @@ class SheepyCommand(private val plugin: Sheepy) : CommandExecutor, TabCompleter 
 
             val removedAnimation = animations.remove(animationName)
             if (removedAnimation != null) {
-                removedAnimation.stop()
+                removedAnimation.remove()
                 Utils.sendMessage(player, "Removed and stopped ${Config.VAR_COLOR}${removedAnimation.name}")
             } else {
                 Utils.sendMessage(player, "No animation ${Config.VAR_COLOR}${animationName}")
@@ -99,7 +99,7 @@ class SheepyCommand(private val plugin: Sheepy) : CommandExecutor, TabCompleter 
             return true
         } else if (subcommand == "clear") {
             Utils.sendMessage(player, "stopping ${Config.VAR_COLOR}${animations.size}")
-            animations.forEach { it.value.stop() }
+            animations.forEach { it.value.remove() }
             animations.clear()
             Utils.sendMessage(player, "removed, now running ${Config.VAR_COLOR}${animations.size}")
             return true
