@@ -11,52 +11,64 @@ import org.bukkit.scheduler.BukkitRunnable
 import org.bukkit.scheduler.BukkitTask
 import org.bukkit.util.Vector
 import java.io.File
+import java.io.RandomAccessFile
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.nio.file.Files
 
 class Animation(
-    val file: File,
-    val player: Player?,
-    val plugin: Sheepy,
-    var location: Location,
-    val animations: HashMap<String, Animation>
+    private val file: File,
+    private val player: Player?,
+    private val plugin: Sheepy,
+    private var location: Location,
+    private val animations: HashMap<String, Animation>
 ) {
 
-    val world: World
+    private val world: World
         get() = location.world
 
-    var task: BukkitTask? = null
+    private var task: BukkitTask? = null
 
-    val currentAnimation = this
+    private val currentAnimation = this
 
-    val fileBytes = Files.readAllBytes(file.toPath())
-    val bb = ByteBuffer.wrap(fileBytes).order(ByteOrder.LITTLE_ENDIAN)
+    private val raf = RandomAccessFile(file, "r")
 
-    var i = 0
+    private val fileBytes = Files.readAllBytes(file.toPath())
+    private val bb = ByteBuffer.wrap(fileBytes).order(ByteOrder.LITTLE_ENDIAN)
+
+    private var i = 0
+
+    private var playing = false
 
     val name: String
         get() = file.nameWithoutExtension
 
     fun start() {
-        // particle spawner & reader
+        playing = true
         task = object : BukkitRunnable() {
-
             override fun run() {
                 step()
             }
-
-        }.runTaskTimerAsynchronously(plugin, 0L, 1L)
+        }.runTaskAsynchronously(plugin)
 
     }
 
     fun stop() {
         player?.let { Utils.sendMessage(it, "stopping animation $name") }
+        playing = false
         task?.cancel()
         task = null
     }
 
-    fun step() {
+    fun stepFrame() {
+        if (playing) {
+            Utils.sendMessage(player!!, "can't step")
+            return
+        }
+        step()
+    }
+
+    private fun step() {
         var frame: Frame
 
         if (bb.hasRemaining()) {
@@ -73,10 +85,10 @@ class Animation(
                     color = Color.fromARGB(bb.getInt()),
                 )
             }
-            Utils.sendMessage(
-                player!!,
-                "read frame with length ${frame.animationParticles.size}, remaining: ${bb.hasRemaining()}"
-            )
+//            Utils.sendMessage(
+//                player!!,
+//                "read frame with length ${frame.animationParticles.size}, remaining: ${bb.hasRemaining()}"
+//            )§
         } else {
             task?.cancel()
             task = null
@@ -93,10 +105,14 @@ class Animation(
 
         player.sendActionBar(Component.text("${ChatColor.GRAY}particles in current frame: ${frame.animationParticles.size}, running for: ${i}, pos: ${p1pos.x.toInt()}, ${p1pos.y.toInt()}, ${p1pos.z.toInt()}"))
         i++
-//        Utils.sendMessage(player, "playing frame")
         playFrame(frame, location)
-//        Utils.sendMessage(player, "played")
 
+        if (playing) object : BukkitRunnable() {
+            override fun run() {
+                step()
+            }
+
+        }.runTaskAsynchronously(plugin)
     }
 
     private fun playFrame(frame: Frame, loc: Location) {
@@ -126,7 +142,12 @@ class Animation(
 
 data class Frame(val animationParticles: Array<AnimationParticle?>)
 
-data class AnimationParticle(val x: Float, val y: Float, val z: Float, val color: Color) {
+data class AnimationParticle(
+    val x: Float,
+    val y: Float,
+    val z: Float,
+    val color: Color
+) {
     val scale: Byte
         get() = color.alpha.toByte()
 }

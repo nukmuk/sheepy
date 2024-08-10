@@ -127,7 +127,7 @@ class SheepyCommand(private val plugin: Sheepy) : CommandExecutor, TabCompleter 
             if (animations.isEmpty) {
                 Utils.sendMessage(player, "No animations found")
             } else {
-                animations.forEach { it.value.step() }
+                animations.forEach { it.value.stepFrame() }
             }
             return true
         } else if (subcommand == "list" || subcommand == "ls") {
