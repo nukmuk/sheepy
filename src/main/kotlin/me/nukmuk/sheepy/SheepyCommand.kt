@@ -10,7 +10,6 @@ import org.bukkit.entity.Player
 
 class SheepyCommand(private val plugin: Sheepy) : CommandExecutor, TabCompleter {
 
-    val loader: AnimLoader = AnimLoader(plugin)
     val animations = HashMap<String, Animation>()
 
     override fun onCommand(commandSender: CommandSender, command: Command, s: String, args: Array<String>): Boolean {
@@ -38,13 +37,11 @@ class SheepyCommand(private val plugin: Sheepy) : CommandExecutor, TabCompleter 
                 )
             }
              */
-            val sch = Bukkit.getScheduler()
-            Utils.sendMessage(player, "active workers ${sch.activeWorkers}, pending ${sch.pendingTasks}")
 
             return true
         } else if (subcommand == "files") {
             val folderName = args.getOrNull(1) ?: ""
-            val files = loader.getAnimsInFolder(folderName)
+            val files = Utils.getAnimsInFolder(plugin, folderName)
             Utils.sendMessage(
                 player,
                 files?.joinToString("${ChatColor.GRAY}, ${ChatColor.RESET}") { file -> file.name }
@@ -65,7 +62,7 @@ class SheepyCommand(private val plugin: Sheepy) : CommandExecutor, TabCompleter 
                 return true
             }
 
-            val files = loader.getAnimsInFolder()
+            val files = Utils.getAnimsInFolder(plugin)
 
             val file = files?.find { it.nameWithoutExtension == fileName }
 

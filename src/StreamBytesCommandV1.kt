@@ -16,7 +16,7 @@ import java.nio.file.Files
 import java.util.concurrent.BlockingQueue
 import java.util.function.Consumer
 
-class StreamBytesCommand : CommandExecutor {
+class StreamBytesCommandV1 : CommandExecutor {
     class Animation(frames: BlockingQueue<Array<AnimationParticle>>) {
         var dontLoad: Boolean = false
         val frames: BlockingQueue<Array<AnimationParticle>> = frames

@@ -2,6 +2,7 @@ package me.nukmuk.sheepy
 
 import org.bukkit.ChatColor
 import org.bukkit.entity.Player
+import java.io.File
 import kotlin.text.replace
 
 object Utils {
@@ -35,6 +36,16 @@ object Utils {
             (hbits and 0x8000) shl 16 // sign  << ( 31 - 15 )
                     or ((exp or mant) shl 13)
         ) // value << ( 23 - 10 )
+    }
+
+    fun getAnimsInFolder(plugin: Sheepy, folderName: String = ""): List<File>? {
+        val pluginFolder = plugin.dataFolder
+        val sanitizedFolderName = sanitizeString(folderName) ?: ""
+        val animFolder = File(pluginFolder, sanitizedFolderName)
+
+        val files = animFolder.listFiles()?.filter { file -> file.extension == Config.FILE_EXTENSION }
+
+        return files?.toList()
     }
 
     fun sanitizeString(s: String?): String? {

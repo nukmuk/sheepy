@@ -1,5 +1,6 @@
 package me.nukmuk.sheepy
 
+import it.unimi.dsi.fastutil.io.FastBufferedInputStream
 import net.kyori.adventure.text.Component
 import org.bukkit.ChatColor
 import org.bukkit.Color
@@ -10,10 +11,9 @@ import org.bukkit.entity.Player
 import org.bukkit.scheduler.BukkitRunnable
 import org.bukkit.util.Vector
 import java.io.File
-import java.io.RandomAccessFile
+import java.io.FileInputStream
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
-import java.nio.file.Files
 import java.util.concurrent.atomic.AtomicBoolean
 
 class Animation(
@@ -27,7 +27,7 @@ class Animation(
     private val world: World
         get() = location.world
 
-    private val raf = RandomAccessFile(file, "r")
+    private val reader = FastBufferedInputStream(FileInputStream(file))
 
     private var i = 0
 
@@ -36,36 +36,22 @@ class Animation(
     val name: String
         get() = file.nameWithoutExtension
 
-    lateinit var bytes: ByteArray
-    lateinit var bb: ByteBuffer
 
-    var particleScale = 1.0f
+    var particleScale = 5.0f
     var animationScale = 1.0f
     var repeat = false
 
 
     private var task = object : BukkitRunnable() {
         var processing = false
-        var shouldLoad = true
-        var loading = false
         override fun run() {
 //            player!!.sendActionBar("processing $processing, shouldLoad $shouldLoad, loading $loading, playing: ${playing.get()} i: $i")
-            if (processing || loading) return
+            if (processing) return
             if (!playing.get()) return
             processing = true
-            if (shouldLoad) {
-                loading = true
-                shouldLoad = false
-                bytes = Files.readAllBytes(file.toPath())
-                bb = ByteBuffer.wrap(bytes).order(ByteOrder.LITTLE_ENDIAN)
-                Utils.sendMessage(player!!, "loaded ${bytes.size} bytes")
-                loading = false
-                processing = false
-                return
-            }
-            if (!bb.hasRemaining()) {
+            if (reader.available() == 0) {
                 if (repeat) {
-                    bb.position(0)
+                    reader.position(0)
                 } else {
                     playing.set(false)
                     processing = false
@@ -74,7 +60,7 @@ class Animation(
                     return
                 }
             }
-            step(bb)
+            step()
             processing = false
         }
     }.runTaskTimerAsynchronously(plugin, 0L, 1L)
@@ -99,21 +85,22 @@ class Animation(
         Utils.sendMessage(player!!, "not implemented")
     }
 
-    private fun step(bb: ByteBuffer) {
+    private fun step() {
+
         var frame: Frame
 
-        if (bb.hasRemaining()) {
-            val length = bb.getShort().toInt()
+        if (reader.available() > 0) {
+            val length = getShort().toInt()
 
             frame = Frame(arrayOfNulls<AnimationParticle>(length))
 
             // loop over particles and add them to frame
             for (i in 0 until length) {
                 frame.animationParticles[i] = AnimationParticle(
-                    x = getPosComponent(bb),
-                    y = getPosComponent(bb),
-                    z = getPosComponent(bb),
-                    color = Color.fromARGB(bb.getInt()),
+                    x = getPosComponent(),
+                    y = getPosComponent(),
+                    z = getPosComponent(),
+                    color = Color.fromARGB(getInt()),
                 )
             }
 //            Utils.sendMessage(
@@ -139,8 +126,15 @@ class Animation(
     }
 
     private fun playFrame(frame: Frame, loc: Location) {
-        for (p in frame.animationParticles) {
-            if (p == null) continue
+        val total = frame.animationParticles.size
+        val max = 3
+
+        val divider: Int = total / max
+
+        frame.animationParticles.forEachIndexed { idx, p ->
+            if (p == null) return
+            if (idx % divider != 0) return@forEachIndexed
+            Utils.sendMessage(player!!, "idx: $idx")
             world.spawnParticle(
                 Particle.DUST,
                 loc.x + p.x,
@@ -156,10 +150,18 @@ class Animation(
         }
     }
 
-    private fun getPosComponent(bb: ByteBuffer): Float {
-        val posComponent = bb.getShort()
+    private fun getPosComponent(): Float {
+        val posComponent = getShort()
         val posComponentFloat = Utils.convertToFloat(posComponent.toInt())
         return posComponentFloat
+    }
+
+    private fun getShort(): Short {
+        return ByteBuffer.wrap(reader.readNBytes(2)).order(ByteOrder.LITTLE_ENDIAN).getShort()
+    }
+
+    private fun getInt(): Int {
+        return ByteBuffer.wrap(reader.readNBytes(4)).order(ByteOrder.LITTLE_ENDIAN).getInt()
     }
 }
 
