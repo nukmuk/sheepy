@@ -37,10 +37,11 @@ class Animation(
         get() = file.nameWithoutExtension
 
 
-    var particleScale = 5.0f
+    var particleScale = 1.0f
     var animationScale = 1.0f
     var repeat = false
 
+    var maxParticlesPerFrame = 0
 
     private var task = object : BukkitRunnable() {
         var processing = false
@@ -49,10 +50,11 @@ class Animation(
             if (processing) return
             if (!playing.get()) return
             processing = true
-            if (reader.available() == 0) {
+            if (reader.position() == reader.length()) {
                 if (repeat) {
                     reader.position(0)
                 } else {
+                    Utils.sendMessage(player!!, "stopping anim $name @end")
                     playing.set(false)
                     processing = false
                     remove()
@@ -127,14 +129,14 @@ class Animation(
 
     private fun playFrame(frame: Frame, loc: Location) {
         val total = frame.animationParticles.size
-        val max = 3
 
-        val divider: Int = total / max
+        val divider: Int = if (maxParticlesPerFrame == 0) 0 else total / maxParticlesPerFrame
+
+        val scaleMultiplier = 1 + Math.clamp(divider / 20.0f, 0.0f, 2.0f)
 
         frame.animationParticles.forEachIndexed { idx, p ->
             if (p == null) return
-            if (idx % divider != 0) return@forEachIndexed
-            Utils.sendMessage(player!!, "idx: $idx")
+            if (divider != 0 && idx % divider != 0) return@forEachIndexed
             world.spawnParticle(
                 Particle.DUST,
                 loc.x + p.x,
@@ -145,7 +147,7 @@ class Animation(
                 0.0,
                 0.0,
                 0.0,
-                Particle.DustOptions(p.color, p.scale.toFloat() / 255 * particleScale)
+                Particle.DustOptions(p.color, p.scale.toFloat() / 255 * particleScale * scaleMultiplier * 5)
             )
         }
     }

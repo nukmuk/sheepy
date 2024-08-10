@@ -140,6 +140,18 @@ class SheepyCommand(private val plugin: Sheepy) : CommandExecutor, TabCompleter 
             Utils.sendMessage(player, "activeWorkers: ${Config.VAR_COLOR}${Bukkit.getScheduler().activeWorkers}")
             Utils.sendMessage(player, "pendingTasks: ${Config.VAR_COLOR}${Bukkit.getScheduler().pendingTasks}")
             return true
+        } else if (subcommand == "max") {
+            val animName = args.getOrNull(1)
+            val anim = animations[animName]
+            val newMax = args.getOrNull(2)?.toIntOrNull()
+            anim?.maxParticlesPerFrame = newMax ?: anim.maxParticlesPerFrame
+            return true
+        } else if (subcommand == "pscale") {
+            val animName = args.getOrNull(1)
+            val anim = animations[animName]
+            val newScale = args.getOrNull(2)?.toFloatOrNull()
+            anim?.particleScale = newScale ?: anim.particleScale
+            return true
         }
         return false
     }
