@@ -1,11 +1,19 @@
 package me.nukmuk.sheepy
 
+import net.minecraft.core.BlockPos
+import net.minecraft.network.protocol.game.ClientboundAddEntityPacket
+import net.minecraft.network.protocol.game.ClientboundAnimatePacket
+import net.minecraft.world.entity.Entity
+import net.minecraft.world.entity.LivingEntity
+import net.minecraft.world.entity.Mob
 import org.bukkit.Bukkit
 import org.bukkit.ChatColor
 import org.bukkit.command.Command
 import org.bukkit.command.CommandExecutor
 import org.bukkit.command.CommandSender
 import org.bukkit.command.TabCompleter
+import org.bukkit.craftbukkit.CraftWorld
+import org.bukkit.craftbukkit.entity.CraftPlayer
 import org.bukkit.entity.Player
 
 class SheepyCommand(private val plugin: Sheepy) : CommandExecutor, TabCompleter {
@@ -25,18 +33,20 @@ class SheepyCommand(private val plugin: Sheepy) : CommandExecutor, TabCompleter 
         val subcommand = args[0]
 
         if (subcommand == "test") {
-            /*
-            for (i in 1..10000) {
-                player.world.spawnParticle(
-                    Particle.CLOUD,
-                    player.location.add(Vector(i * 0.003, 2.0, 0.0)),
-                    0,
-                    0.0,
-                    0.0,
-                    0.0,
-                )
-            }
-             */
+
+//            for (i in 1..5000) {
+
+//                player.world.spawnParticle(Particle.CLOUD, player.location, 1)
+
+//                player.world.spawn(player.location.add(Vector(i * 0.1, 0.0, 5.0)), TextDisplay::class.java) { entity ->
+//                    entity.text(Component.text("a", NamedTextColor.DARK_BLUE))
+//                    entity.billboard = Display.Billboard.VERTICAL // pivot only around the vertical axis
+//                    entity.backgroundColor = Color.RED // make the background red
+//                    entity.isPersistent = false
+//                }
+
+//            }
+
 
             return true
         } else if (subcommand == "files") {

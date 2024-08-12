@@ -41,13 +41,16 @@ class Animation(
     var animationScale = 1.0f
     var repeat = false
 
-    var maxParticlesPerFrame = 0
+    var maxParticlesPerFrame = 1000
 
     private var task = object : BukkitRunnable() {
         var processing = false
         override fun run() {
 //            player!!.sendActionBar("processing $processing, shouldLoad $shouldLoad, loading $loading, playing: ${playing.get()} i: $i")
-            if (processing) return
+            if (processing) {
+                player?.sendActionBar("${ChatColor.RED}previous frame not played yet")
+                return
+            }
             if (!playing.get()) return
             processing = true
             if (reader.position() == reader.length()) {
@@ -132,7 +135,7 @@ class Animation(
 
         val divider: Int = if (maxParticlesPerFrame == 0) 0 else total / maxParticlesPerFrame
 
-        val scaleMultiplier = 1 + Math.clamp(divider / 20.0f, 0.0f, 2.0f)
+        val scaleMultiplier = 1 + Math.clamp(divider / 30.0f, 0.0f, 2.0f)
 
         frame.animationParticles.forEachIndexed { idx, p ->
             if (p == null) return
@@ -147,7 +150,8 @@ class Animation(
                 0.0,
                 0.0,
                 0.0,
-                Particle.DustOptions(p.color, p.scale.toFloat() / 255 * particleScale * scaleMultiplier * 5)
+                Particle.DustOptions(p.color, p.scale.toFloat() / 255 * particleScale * scaleMultiplier * 5),
+                true
             )
         }
     }

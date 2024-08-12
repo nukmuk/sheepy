@@ -10,6 +10,7 @@ class Sheepy : JavaPlugin() {
     override fun onEnable() {
         // Plugin startup logic
         getCommand("sheepy")?.setExecutor(SheepyCommand(this));
+        getCommand("misc")?.setExecutor(MiscCommand(this));
 
     }
 
