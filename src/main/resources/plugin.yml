@@ -7,4 +7,6 @@ commands:
     description: Sheepy main command
     usage: "/sh"
     aliases: [ sh ]
+    permission: sheepy.use
   misc:
+    permission: sheepy.misc

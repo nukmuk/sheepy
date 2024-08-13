@@ -29,6 +29,12 @@ class MiscCommand(private val plugin: Sheepy) : CommandExecutor {
         args: Array<out String>?
     ): Boolean {
         val player = sender as Player
+
+        if (!player.hasPermission("sheepy.misc")) {
+            Utils.sendMessage(player, Config.Strings.NO_PERMISSION)
+            return true
+        }
+
         val craftPlayer = player as CraftPlayer
         val subcmd = args?.getOrNull(0)?.lowercase()
 

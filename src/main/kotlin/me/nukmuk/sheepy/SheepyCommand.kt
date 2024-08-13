@@ -19,6 +19,10 @@ class SheepyCommand(private val plugin: Sheepy) : CommandExecutor, TabCompleter 
         if (args.isEmpty()) return false
         val player: Player = commandSender
 
+        if (!player.hasPermission("sheepy.use")) {
+            Utils.sendMessage(player, Config.Strings.NO_PERMISSION)
+            return true
+        }
 
         val subcommand = args[0]
 
