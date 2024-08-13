@@ -1,24 +1,14 @@
 package me.nukmuk.sheepy
 
-import net.minecraft.core.BlockPos
-import net.minecraft.network.protocol.game.ClientboundAddEntityPacket
-import net.minecraft.network.protocol.game.ClientboundAnimatePacket
-import net.minecraft.world.entity.Entity
-import net.minecraft.world.entity.LivingEntity
-import net.minecraft.world.entity.Mob
 import org.bukkit.Bukkit
 import org.bukkit.ChatColor
 import org.bukkit.command.Command
 import org.bukkit.command.CommandExecutor
 import org.bukkit.command.CommandSender
 import org.bukkit.command.TabCompleter
-import org.bukkit.craftbukkit.CraftWorld
-import org.bukkit.craftbukkit.entity.CraftPlayer
 import org.bukkit.entity.Player
 
 class SheepyCommand(private val plugin: Sheepy) : CommandExecutor, TabCompleter {
-
-    val animations = HashMap<String, Animation>()
 
     override fun onCommand(commandSender: CommandSender, command: Command, s: String, args: Array<String>): Boolean {
 
@@ -67,7 +57,7 @@ class SheepyCommand(private val plugin: Sheepy) : CommandExecutor, TabCompleter 
                 return false
             }
 
-            if (animations.containsKey(fileName)) {
+            if (AnimationsPlayer.animations().contains(fileName)) {
                 Utils.sendMessage(player, "Animation ${Config.VAR_COLOR}${fileName} already exists")
                 return true
             }
@@ -86,8 +76,11 @@ class SheepyCommand(private val plugin: Sheepy) : CommandExecutor, TabCompleter 
 
             Utils.sendMessage(player, msg)
 
-            val animation =
-                Animation(file, player, plugin, player.getTargetBlock(null, 10).location.add(0.0, 1.0, 0.0), animations)
+            val animation = AnimationsPlayer.createAnimation(
+                file.nameWithoutExtension,
+                file,
+                player.getTargetBlock(null, 10).location.add(0.0, 1.0, 0.0)
+            )
 
             animation.repeat = repeat
 
@@ -95,33 +88,29 @@ class SheepyCommand(private val plugin: Sheepy) : CommandExecutor, TabCompleter 
                 animation.start()
             }
 
-            animations.put(animation.name, animation)
-
             return true
         } else if (subcommand == "remove" || subcommand == "rm") {
             val animationName = args.getOrNull(1)
             if (animationName == null) return false
 
-            val removedAnimation = animations.remove(animationName)
+            val removedAnimation = AnimationsPlayer.getAnimation(animationName)
+            removedAnimation?.remove()
             if (removedAnimation != null) {
-                removedAnimation.remove()
                 Utils.sendMessage(player, "Removed and stopped ${Config.VAR_COLOR}${removedAnimation.name}")
             } else {
                 Utils.sendMessage(player, "No animation ${Config.VAR_COLOR}${animationName}")
             }
             return true
         } else if (subcommand == "clear") {
-            Utils.sendMessage(player, "stopping ${Config.VAR_COLOR}${animations.size}")
-            animations.forEach { it.value.remove() }
-            animations.clear()
-            Utils.sendMessage(player, "removed, now running ${Config.VAR_COLOR}${animations.size}")
+            Utils.sendMessage(player, "stopping ${Config.VAR_COLOR}${AnimationsPlayer.animations().size}")
+            AnimationsPlayer.clearAnimations()
             return true
 
         } else if (subcommand == "stop" || subcommand == "pause" || subcommand == "start") {
             val animationName = Utils.sanitizeString(args.getOrNull(1))
 
             if (animationName == null) return false
-            val animation = animations[animationName]
+            val animation = AnimationsPlayer.getAnimation(animationName)
             if (animation == null) {
                 Utils.sendMessage(player, "No animation ${Config.VAR_COLOR}$animationName")
                 return true
@@ -137,28 +126,28 @@ class SheepyCommand(private val plugin: Sheepy) : CommandExecutor, TabCompleter 
 
             return true
         } else if (subcommand == "step") {
-            if (animations.isEmpty) {
+            if (AnimationsPlayer.animations().isEmpty()) {
                 Utils.sendMessage(player, "No animations found")
             } else {
-                animations.forEach { it.value.stepFrame() }
+                Utils.sendMessage(player, "Not implemented")
             }
             return true
         } else if (subcommand == "list" || subcommand == "ls") {
-            Utils.sendMessage(player, "Animations: ${Config.VAR_COLOR}${animations.keys}")
+            Utils.sendMessage(player, "Animations: ${Config.VAR_COLOR}${AnimationsPlayer.animations()}")
             return true
         } else if (subcommand == "tasks") {
             Utils.sendMessage(player, "activeWorkers: ${Config.VAR_COLOR}${Bukkit.getScheduler().activeWorkers}")
             Utils.sendMessage(player, "pendingTasks: ${Config.VAR_COLOR}${Bukkit.getScheduler().pendingTasks}")
             return true
         } else if (subcommand == "max") {
-            val animName = args.getOrNull(1)
-            val anim = animations[animName]
+            val animName = args.getOrNull(1).toString()
+            val anim = AnimationsPlayer.getAnimation(animName)
             val newMax = args.getOrNull(2)?.toIntOrNull()
             anim?.maxParticlesPerFrame = newMax ?: anim.maxParticlesPerFrame
             return true
         } else if (subcommand == "pscale") {
-            val animName = args.getOrNull(1)
-            val anim = animations[animName]
+            val animName = args.getOrNull(1).toString()
+            val anim = AnimationsPlayer.getAnimation(animName)
             val newScale = args.getOrNull(2)?.toFloatOrNull()
             anim?.particleScale = newScale ?: anim.particleScale
             return true

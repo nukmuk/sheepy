@@ -9,9 +9,9 @@ class Sheepy : JavaPlugin() {
 
     override fun onEnable() {
         // Plugin startup logic
-        getCommand("sheepy")?.setExecutor(SheepyCommand(this));
-        getCommand("misc")?.setExecutor(MiscCommand(this));
-
+        getCommand("sheepy")?.setExecutor(SheepyCommand(this))
+        getCommand("misc")?.setExecutor(MiscCommand(this))
+        AnimationsPlayer.initialize(this)
     }
 
     override fun onDisable() {
