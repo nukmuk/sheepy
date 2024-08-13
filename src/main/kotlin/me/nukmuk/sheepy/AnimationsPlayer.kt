@@ -7,18 +7,21 @@ import org.bukkit.scheduler.BukkitRunnable
 import org.bukkit.scheduler.BukkitTask
 import org.joml.Vector3f
 import java.io.File
+import kotlin.math.ceil
 
 object AnimationsPlayer {
     private val animations = HashMap<String, Animation>()
     private lateinit var plugin: Sheepy
     private lateinit var task: BukkitTask
 
+    var maxParticlesPerTick = 2000
+
     fun animations(): Set<String> {
         return animations.keys
     }
 
     fun createAnimation(name: String, file: File, location: Location): Animation {
-        val animation = Animation(file, null, plugin, location)
+        val animation = Animation(name, file, null, plugin, location)
         animations.put(name, animation)
         return animation
     }
@@ -43,6 +46,7 @@ object AnimationsPlayer {
                     sendPlayersActionBar("${ChatColor.RED}previous frame not played yet, animations playing: ${animations.keys} i: $i")
                     return
                 }
+                if (animations.isEmpty()) return
                 processing = true
                 val framesToBePlayed = ArrayList<Frame>()
                 sendPlayersActionBar("${Config.PRIMARY_COLOR}playing: ${Config.VAR_COLOR}${animations.keys} ${Config.PRIMARY_COLOR}i: ${Config.VAR_COLOR}$i")
@@ -63,8 +67,13 @@ object AnimationsPlayer {
                     }
                     framesToBePlayed.add(frame)
                 }
+                if (framesToBePlayed.isEmpty()) {
+                    processing = false
+                    return
+                }
+                val maxParticles: Int = ceil((maxParticlesPerTick.toDouble() / framesToBePlayed.size)).toInt()
                 framesToBePlayed.forEach { frame ->
-                    playFrame(frame, 1000, 1.0f)
+                    playFrame(frame, maxParticles)
                 }
                 i++
                 processing = false
@@ -72,8 +81,9 @@ object AnimationsPlayer {
         }.runTaskTimerAsynchronously(plugin, 0L, 1L)
     }
 
-    private fun playFrame(frame: Frame, maxParticles: Int, particleScale: Float) {
+    private fun playFrame(frame: Frame, maxParticles: Int) {
         val total = frame.animationParticles.size
+        val particleScale = frame.animation.particleScale
 
         val divider: Int = if (maxParticles == 0) 0 else total / maxParticles
 

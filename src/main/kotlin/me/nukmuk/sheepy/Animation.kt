@@ -13,6 +13,7 @@ import java.nio.ByteOrder
 import java.util.concurrent.atomic.AtomicBoolean
 
 class Animation(
+    val name: String,
     private val file: File,
     private val player: Player?,
     plugin: Sheepy,
@@ -27,9 +28,6 @@ class Animation(
     private var i = 0
 
     var playing = AtomicBoolean(false)
-
-    val name: String
-        get() = file.nameWithoutExtension
 
 
     var particleScale = 1.0f

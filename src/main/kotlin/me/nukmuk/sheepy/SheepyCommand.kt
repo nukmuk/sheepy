@@ -50,15 +50,18 @@ class SheepyCommand(private val plugin: Sheepy) : CommandExecutor, TabCompleter 
         } else if (subcommand == "stream" || subcommand == "st" || subcommand == "load") {
 
             val fileName = Utils.sanitizeString(args.getOrNull(1))
-            val repeat: Boolean = args.getOrNull(2) == "true"
+            var animationName = Utils.sanitizeString(args.getOrNull(2))
+            val repeat: Boolean = args.getOrNull(3) == "true"
 
             if (fileName == null) {
                 Utils.sendMessage(player, "Please provide filename")
                 return false
             }
 
-            if (AnimationsPlayer.animations().contains(fileName)) {
-                Utils.sendMessage(player, "Animation ${Config.VAR_COLOR}${fileName} already exists")
+            if (animationName == null) animationName = fileName
+
+            if (AnimationsPlayer.animations().contains(animationName)) {
+                Utils.sendMessage(player, "Animation ${Config.VAR_COLOR}${animationName} already exists")
                 return true
             }
 
@@ -77,7 +80,7 @@ class SheepyCommand(private val plugin: Sheepy) : CommandExecutor, TabCompleter 
             Utils.sendMessage(player, msg)
 
             val animation = AnimationsPlayer.createAnimation(
-                file.nameWithoutExtension,
+                animationName,
                 file,
                 player.getTargetBlock(null, 10).location.add(0.0, 1.0, 0.0)
             )
@@ -140,10 +143,11 @@ class SheepyCommand(private val plugin: Sheepy) : CommandExecutor, TabCompleter 
             Utils.sendMessage(player, "pendingTasks: ${Config.VAR_COLOR}${Bukkit.getScheduler().pendingTasks}")
             return true
         } else if (subcommand == "max") {
-            val animName = args.getOrNull(1).toString()
-            val anim = AnimationsPlayer.getAnimation(animName)
-            val newMax = args.getOrNull(2)?.toIntOrNull()
-            anim?.maxParticlesPerFrame = newMax ?: anim.maxParticlesPerFrame
+            val newMax = args.getOrNull(1)?.toIntOrNull()
+            if (newMax == null) {
+                return false
+            }
+            AnimationsPlayer.maxParticlesPerTick = newMax
             return true
         } else if (subcommand == "pscale") {
             val animName = args.getOrNull(1).toString()
