@@ -17,12 +17,15 @@ repositories {
 //    maven("https://oss.sonatype.org/content/groups/public/") {
 //        name = "sonatype"
 //    }
+    maven(url = "https://repo.codemc.org/repository/maven-public/")
 }
 
 dependencies {
 //    compileOnly("io.papermc.paper:paper-api:1.21-R0.1-SNAPSHOT")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
     paperweight.paperDevBundle("1.21.1-R0.1-SNAPSHOT")
+    implementation("dev.jorel:commandapi-bukkit-shade-mojang-mapped:9.5.2")
+    compileOnly("dev.jorel:commandapi-bukkit-kotlin:9.5.3")
 }
 
 val targetJavaVersion = 21
@@ -44,6 +47,8 @@ tasks.processResources {
 }
 
 tasks.withType<ShadowJar> {
+    relocate("dev.jorel.commandapi", "$group.commandapi")
+    minimize()
     archiveFileName.set("sheepy.jar")
     destinationDirectory.set(file("F:/Servers/dev/plugins"))
 }
