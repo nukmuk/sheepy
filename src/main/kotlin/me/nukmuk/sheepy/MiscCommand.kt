@@ -78,7 +78,7 @@ class MiscCommand(private val plugin: Sheepy) : CommandExecutor {
             plugin.server.scheduler.runTaskTimer(plugin, { task ->
                 if (i >= 20 * 5) task.cancel()
                 for (otherPlayer in plugin.server.onlinePlayers) {
-                    if (otherPlayer != player) continue;
+//                    if (otherPlayer != player) continue;
                     (otherPlayer as CraftPlayer).handle.connection.sendPacket(
                         ClientboundEntityEventPacket(
                             otherPlayer.handle,
@@ -89,24 +89,27 @@ class MiscCommand(private val plugin: Sheepy) : CommandExecutor {
                 i++
             }, 0, 1)
         } else if (subcmd == "5") {
-            for (i in 1..1000) {
-                val level = (player.world as CraftWorld).handle
-                val entity = EntityType.BLOCK_DISPLAY.create(level)
-                craftPlayer.handle.connection.sendPacket(
-                    ClientboundAddEntityPacket(
-                        entity!!.id,
-                        entity.uuid,
-                        player.location.x + i * 0.1,
-                        player.location.y,
-                        player.location.z,
-                        0f,
-                        0f,
-                        EntityType.BLOCK_DISPLAY,
-                        0,
-                        Vec3(0.0, 0.0, 0.0),
-                        0.0
+            for (otherPlayer in plugin.server.onlinePlayers) {
+                val otherCraftPlayer = (otherPlayer as CraftPlayer)
+                for (i in 1..1000) {
+                    val level = (player.world as CraftWorld).handle
+                    val entity = EntityType.BLOCK_DISPLAY.create(level)
+                    otherCraftPlayer.handle.connection.sendPacket(
+                        ClientboundAddEntityPacket(
+                            entity!!.id,
+                            entity.uuid,
+                            otherPlayer.location.x + i * 0.1,
+                            otherPlayer.location.y,
+                            otherPlayer.location.z,
+                            0f,
+                            0f,
+                            EntityType.PIG,
+                            0,
+                            Vec3(0.0, 0.0, 0.0),
+                            0.0
+                        )
                     )
-                )
+                }
             }
 //            player.sendMessage(entity.toString())
         } else if (subcmd == "6") {

@@ -10,3 +10,8 @@ commands:
     permission: sheepy.use
   misc:
     permission: sheepy.misc
+permissions:
+  sheepy.use:
+    default: op
+  sheepy.misc:
+    default: op
