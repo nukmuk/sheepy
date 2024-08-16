@@ -1,0 +1,16 @@
+next:
+add debug list (only display action bar to these players), /sh debug to toggle
+effects when walking inside animations
+config file to toggle particles "force" property, toggle with command too
+
+add other particles, display entities
+maybe make format big endian instead
+add gzip compression
+- change cmd format similar to groupmanager, luckperms, decentholograms
+- add tab completion
+add config and save repeating animations
+- rotate animations
+- different methods of sending packets
+per player packets
+- implement animationscale
+- maybe add few frames buffer so gc doesn't cause lag
