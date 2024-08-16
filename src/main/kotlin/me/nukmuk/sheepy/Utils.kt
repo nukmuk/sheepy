@@ -1,13 +1,15 @@
 package me.nukmuk.sheepy
 
 import org.bukkit.ChatColor
-import org.bukkit.entity.Player
+import org.bukkit.command.CommandSender
 import java.io.File
 import kotlin.text.replace
 
 object Utils {
-    fun sendMessage(player: Player, message: String) {
-        player.sendMessage("${ChatColor.GREEN}[Sheepy] ${Config.PRIMARY_COLOR}$message")
+    var animsInFolder = listOf<File>()
+
+    fun sendMessage(sender: CommandSender, message: String) {
+        sender.sendMessage("${ChatColor.GREEN}[Sheepy] ${Config.PRIMARY_COLOR}$message")
     }
 
     // from https://stackoverflow.com/a/6162687
@@ -38,14 +40,19 @@ object Utils {
         ) // value << ( 23 - 10 )
     }
 
-    fun getAnimsInFolder(plugin: Sheepy, folderName: String = ""): List<File>? {
+    fun getAnimsInFolder(plugin: Sheepy): List<File> {
         val pluginFolder = plugin.dataFolder
-        val sanitizedFolderName = sanitizeString(folderName) ?: ""
-        val animFolder = File(pluginFolder, sanitizedFolderName)
+        val animFolder = File(pluginFolder, "")
 
         val files = animFolder.listFiles()?.filter { file -> file.extension == Config.FILE_EXTENSION }
 
-        return files?.toList()
+        if (files != null) {
+            animsInFolder = files
+        } else {
+            return listOf()
+        }
+
+        return files.toList()
     }
 
     fun sanitizeString(s: String?): String? {

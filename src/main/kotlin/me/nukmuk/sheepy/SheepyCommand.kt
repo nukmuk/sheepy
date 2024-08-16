@@ -45,10 +45,10 @@ class SheepyCommand(private val plugin: Sheepy) : CommandExecutor, TabCompleter 
             return true
         } else if (subcommand == "files") {
             val folderName = args.getOrNull(1) ?: ""
-            val files = Utils.getAnimsInFolder(plugin, folderName)
+            val files = Utils.getAnimsInFolder(plugin)
             Utils.sendMessage(
                 player,
-                files?.joinToString("${ChatColor.GRAY}, ${ChatColor.RESET}") { file -> file.name }
+                files.joinToString("${ChatColor.GRAY}, ${ChatColor.RESET}") { file -> file.name }
                     ?: "Folder ${folderName.replace(Regex("[^a-zA-Z0-9_-]"), "")} empty")
             return true
         } else if (subcommand == "stream" || subcommand == "st" || subcommand == "load") {
@@ -64,7 +64,7 @@ class SheepyCommand(private val plugin: Sheepy) : CommandExecutor, TabCompleter 
 
             if (animationName == null) animationName = fileName
 
-            if (AnimationsPlayer.animations().contains(animationName)) {
+            if (AnimationsPlayer.animationNames().contains(animationName)) {
                 Utils.sendMessage(player, "Animation ${Config.VAR_COLOR}${animationName} already exists")
                 return true
             }
@@ -109,7 +109,7 @@ class SheepyCommand(private val plugin: Sheepy) : CommandExecutor, TabCompleter 
             }
             return true
         } else if (subcommand == "clear") {
-            Utils.sendMessage(player, "stopping ${Config.VAR_COLOR}${AnimationsPlayer.animations().size}")
+            Utils.sendMessage(player, "stopping ${Config.VAR_COLOR}${AnimationsPlayer.animationNames().size}")
             AnimationsPlayer.clearAnimations()
             return true
 
@@ -133,14 +133,14 @@ class SheepyCommand(private val plugin: Sheepy) : CommandExecutor, TabCompleter 
 
             return true
         } else if (subcommand == "step") {
-            if (AnimationsPlayer.animations().isEmpty()) {
+            if (AnimationsPlayer.animationNames().isEmpty()) {
                 Utils.sendMessage(player, "No animations found")
             } else {
                 Utils.sendMessage(player, "Not implemented")
             }
             return true
         } else if (subcommand == "list" || subcommand == "ls") {
-            Utils.sendMessage(player, "Animations: ${Config.VAR_COLOR}${AnimationsPlayer.animations()}")
+            Utils.sendMessage(player, "Animations: ${Config.VAR_COLOR}${AnimationsPlayer.animationNames()}")
             return true
         } else if (subcommand == "tasks") {
             Utils.sendMessage(player, "activeWorkers: ${Config.VAR_COLOR}${Bukkit.getScheduler().activeWorkers}")

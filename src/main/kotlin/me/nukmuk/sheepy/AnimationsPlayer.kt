@@ -10,13 +10,13 @@ import java.io.File
 import kotlin.math.ceil
 
 object AnimationsPlayer {
-    private val animations = HashMap<String, Animation>()
+    val animations = HashMap<String, Animation>()
     private lateinit var plugin: Sheepy
     private lateinit var task: BukkitTask
 
     var maxParticlesPerTick = 2000
 
-    fun animations(): Set<String> {
+    fun animationNames(): Set<String> {
         return animations.keys
     }
 
@@ -43,13 +43,12 @@ object AnimationsPlayer {
             var i = 0
             override fun run() {
                 if (processing) {
-                    sendPlayersActionBar("${ChatColor.RED}previous frame not played yet, animations playing: ${animations.keys} i: $i")
+                    sendOpPlayersActionBar("${ChatColor.RED}previous frame not played yet, animations playing: ${animations.keys} i: $i")
                     return
                 }
                 if (animations.isEmpty()) return
                 processing = true
                 val framesToBePlayed = ArrayList<Frame>()
-                sendPlayersActionBar("${Config.PRIMARY_COLOR}playing: ${Config.VAR_COLOR}${animations.keys} ${Config.PRIMARY_COLOR}i: ${Config.VAR_COLOR}$i")
                 val animationIterator = animations.values.iterator()
                 while (animationIterator.hasNext()) {
                     val animation = animationIterator.next()
@@ -67,6 +66,13 @@ object AnimationsPlayer {
                     }
                     framesToBePlayed.add(frame)
                 }
+                sendOpPlayersActionBar(
+                    "${Config.PRIMARY_COLOR}playing: ${Config.VAR_COLOR}${animations.keys} ${Config.PRIMARY_COLOR}i: ${Config.VAR_COLOR}$i ${Config.PRIMARY_COLOR}total particles loaded: ${Config.VAR_COLOR}${
+                        framesToBePlayed.fold(
+                            0
+                        ) { acc, frame -> acc + frame.animationParticles.size }
+                    }"
+                )
                 if (framesToBePlayed.isEmpty()) {
                     processing = false
                     return
@@ -108,7 +114,7 @@ object AnimationsPlayer {
         }
     }
 
-    fun sendPlayersActionBar(message: String) {
+    fun sendOpPlayersActionBar(message: String) {
         plugin.server.onlinePlayers.filter { it.isOp }
             .forEach { it.sendActionBar(message) }
     }
