@@ -8,7 +8,7 @@ import org.bukkit.command.CommandSender
 import org.bukkit.command.TabCompleter
 import org.bukkit.entity.Player
 
-class SheepyCommand(private val plugin: Sheepy) : CommandExecutor, TabCompleter {
+class LegacySheepyCommand(private val plugin: Sheepy) : CommandExecutor, TabCompleter {
 
     override fun onCommand(commandSender: CommandSender, command: Command, s: String, args: Array<String>): Boolean {
 

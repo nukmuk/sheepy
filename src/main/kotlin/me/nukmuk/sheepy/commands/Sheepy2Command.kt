@@ -21,6 +21,31 @@ import kotlin.Boolean
 
 class Sheepy2Command(plugin: Sheepy) {
 
+    fun register() {
+        commandAPICommand("sheepy") {
+            withAliases("sh")
+            withPermission("sheepy.use")
+            subcommand(files)
+            subcommand(stream)
+            subcommand(remove)
+            subcommand(clear)
+            subcommand(pause)
+            subcommand(list)
+            subcommand(globalMaxParticlesPerTick)
+            subcommand(particleScale)
+
+            literalArgument("give")
+            itemStackArgument("item")
+            integerArgument("amount", optional = true)
+            playerExecutor { player, args ->
+                val itemStack: ItemStack = args["item"] as ItemStack
+                val amount: Int = args.getOptional("amount").orElse(1) as Int
+                itemStack.amount = amount
+                player.inventory.addItem(itemStack)
+            }
+        }
+    }
+
     private val files = subcommand("files") {
         anyExecutor { sender, args ->
             val files = Utils.getAnimsInFolder(plugin)
@@ -191,30 +216,6 @@ class Sheepy2Command(plugin: Sheepy) {
                 sender,
                 "Set particle scale to ${Config.VAR_COLOR}${animation.particleScale} ${Config.PRIMARY_COLOR}for ${Config.VAR_COLOR}${animation.name}"
             )
-        }
-    }
-
-    fun register() {
-        commandAPICommand("sheepy2") {
-            withAliases("sh2", "s2")
-            subcommand(files)
-            subcommand(stream)
-            subcommand(remove)
-            subcommand(clear)
-            subcommand(pause)
-            subcommand(list)
-            subcommand(globalMaxParticlesPerTick)
-            subcommand(particleScale)
-
-            literalArgument("give")
-            itemStackArgument("item")
-            integerArgument("amount", optional = true)
-            playerExecutor { player, args ->
-                val itemStack: ItemStack = args["item"] as ItemStack
-                val amount: Int = args.getOptional("amount").orElse(1) as Int
-                itemStack.amount = amount
-                player.inventory.addItem(itemStack)
-            }
         }
     }
 }

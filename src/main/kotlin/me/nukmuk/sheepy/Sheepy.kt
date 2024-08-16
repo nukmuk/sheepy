@@ -15,8 +15,8 @@ class Sheepy : JavaPlugin() {
     override fun onEnable() {
         // Plugin startup logic
         CommandAPI.onEnable()
-        getCommand("sheepy")?.setExecutor(SheepyCommand(this))
-        getCommand("misc")?.setExecutor(MiscCommand(this))
+//        getCommand("sheepy")?.setExecutor(LegacySheepyCommand(this))
+//        getCommand("misc")?.setExecutor(MiscCommand(this))
         AnimationsPlayer.initialize(this)
         Sheepy2Command(this).register()
         Utils.getAnimsInFolder(this)
@@ -24,6 +24,7 @@ class Sheepy : JavaPlugin() {
 
     override fun onDisable() {
         // Plugin shutdown logic
+        AnimationsPlayer.clearAnimations()
         CommandAPI.onDisable()
     }
 }

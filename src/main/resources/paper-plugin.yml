@@ -1,0 +1,9 @@
+name: sheepy
+version: '2.0.0'
+main: me.nukmuk.sheepy.Sheepy
+api-version: '1.21'
+permissions:
+  sheepy.use:
+    default: op
+  sheepy.misc:
+    default: op
