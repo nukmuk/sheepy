@@ -2,7 +2,7 @@ package me.nukmuk.sheepy
 
 import dev.jorel.commandapi.CommandAPI
 import dev.jorel.commandapi.CommandAPIBukkitConfig
-import me.nukmuk.sheepy.commands.Sheepy2Command
+import me.nukmuk.sheepy.commands.SheepyCommand
 import org.bukkit.plugin.java.JavaPlugin
 
 
@@ -18,7 +18,7 @@ class Sheepy : JavaPlugin() {
 //        getCommand("sheepy")?.setExecutor(LegacySheepyCommand(this))
 //        getCommand("misc")?.setExecutor(MiscCommand(this))
         AnimationsPlayer.initialize(this)
-        Sheepy2Command(this).register()
+        SheepyCommand(this).register()
         Utils.getAnimsInFolder(this)
     }
 

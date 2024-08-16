@@ -21,7 +21,7 @@ object AnimationsPlayer {
     }
 
     fun createAnimation(name: String, file: File, location: Location): Animation {
-        val animation = Animation(name, file, null, plugin, location)
+        val animation = Animation(name, file, null, location)
         animations.put(name, animation)
         return animation
     }

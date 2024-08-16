@@ -58,4 +58,12 @@ object Utils {
     fun sanitizeString(s: String?): String? {
         return s?.replace(Regex("[^a-zA-Z0-9_-]"), "")
     }
+
+    fun toRadians(degrees: Float): Float {
+        return degrees * (Math.PI.toFloat() / 180f)
+    }
+
+    fun toDegrees(radians: Float): Float {
+        return radians * (180f / Math.PI.toFloat())
+    }
 }

@@ -1,5 +1,9 @@
-package me.nukmuk.sheepy
+package me.nukmuk.sheepy.commands
 
+import me.nukmuk.sheepy.AnimationsPlayer
+import me.nukmuk.sheepy.Config
+import me.nukmuk.sheepy.Sheepy
+import me.nukmuk.sheepy.Utils
 import org.bukkit.Bukkit
 import org.bukkit.ChatColor
 import org.bukkit.command.Command

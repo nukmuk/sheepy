@@ -1,5 +1,8 @@
-package me.nukmuk.sheepy
+package me.nukmuk.sheepy.commands
 
+import me.nukmuk.sheepy.Config
+import me.nukmuk.sheepy.Sheepy
+import me.nukmuk.sheepy.Utils
 import net.minecraft.network.chat.Component
 import net.minecraft.network.protocol.game.ClientboundAddEntityPacket
 import net.minecraft.network.protocol.game.ClientboundAnimatePacket

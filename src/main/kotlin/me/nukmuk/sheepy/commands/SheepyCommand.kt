@@ -16,23 +16,30 @@ import me.nukmuk.sheepy.Config
 import me.nukmuk.sheepy.Sheepy
 import me.nukmuk.sheepy.Utils
 import org.bukkit.ChatColor
+import org.bukkit.FluidCollisionMode
+import org.bukkit.Location
+import org.bukkit.command.CommandSender
 import org.bukkit.inventory.ItemStack
 import kotlin.Boolean
+import kotlin.math.roundToInt
 
-class Sheepy2Command(plugin: Sheepy) {
+class SheepyCommand(plugin: Sheepy) {
 
     fun register() {
         commandAPICommand("sheepy") {
             withAliases("sh")
             withPermission("sheepy.use")
             subcommand(files)
-            subcommand(stream)
+            subcommand(create)
             subcommand(remove)
             subcommand(clear)
             subcommand(pause)
+            subcommand(resume)
             subcommand(list)
             subcommand(globalMaxParticlesPerTick)
             subcommand(particleScale)
+            subcommand(animationScale)
+            subcommand(rotation)
 
             literalArgument("give")
             itemStackArgument("item")
@@ -55,7 +62,9 @@ class Sheepy2Command(plugin: Sheepy) {
         }
     }
 
-    private val stream = subcommand("stream") {
+    private val create = subcommand("create") {
+        withAliases("c")
+        withAliases("st")
 
         stringArgument("fileName") {
             replaceSuggestions(
@@ -63,14 +72,17 @@ class Sheepy2Command(plugin: Sheepy) {
             )
         }
 
-        withAliases("st")
-        stringArgument("animationName", optional = true)
+        stringArgument("animationName", optional = true) {
+            replaceSuggestions(ArgumentSuggestions.strings { info -> arrayOf(info.previousArgs()["fileName"].toString()) })
+        }
         booleanArgument("repeat", optional = true)
+        floatArgument("scale", optional = true)
         playerExecutor { player, args ->
 
             val fileName = args["fileName"] as String
             var animationName = (args["animationName"] ?: fileName) as String
             val repeat = (args["repeat"] ?: false) as Boolean
+            val scale = (args["scale"]) as? Float
 
             if (AnimationsPlayer.animationNames().contains(animationName)) {
                 Utils.sendMessage(
@@ -79,6 +91,14 @@ class Sheepy2Command(plugin: Sheepy) {
                 )
                 return@playerExecutor
             }
+
+            val range = 64.0
+            val targetPosition = player.rayTraceBlocks(64.0, FluidCollisionMode.ALWAYS)?.hitPosition
+            if (targetPosition == null) {
+                Utils.sendMessage(player, "Please look at a block (range $range blocks)")
+                return@playerExecutor
+            }
+            val targetLocation = Location(player.world, targetPosition.x, targetPosition.y, targetPosition.z)
 
             val files = Utils.getAnimsInFolder(plugin)
 
@@ -92,23 +112,31 @@ class Sheepy2Command(plugin: Sheepy) {
             var msg = "Created animationm with file ${Config.VAR_COLOR}${file.name}"
             if (repeat) msg += "${Config.PRIMARY_COLOR}, repeat ${Config.VAR_COLOR}on"
 
-            Utils.sendMessage(player, msg)
 
             val animation = AnimationsPlayer.createAnimation(
                 animationName,
                 file,
-                player.getTargetBlock(null, 10).location.add(0.0, 1.0, 0.0)
+                targetLocation,
             )
 
             animation.repeat = repeat
 
+            if (scale != null) {
+                animation.animationScale = scale
+                animation.particleScale = scale
+                msg += "${Config.PRIMARY_COLOR}, scale ${Config.VAR_COLOR}$scale"
+            }
+
             animation.start()
+            Utils.sendMessage(player, msg)
         }
     }
 
     private val remove = subcommand("remove") {
         withAliases("rm")
-        stringArgument("animationName")
+        stringArgument("animationName") {
+            replaceSuggestions(currentAnimationsSuggestion())
+        }
         anyExecutor { sender, args ->
             val animationName = args["animationName"] as String
 
@@ -134,9 +162,9 @@ class Sheepy2Command(plugin: Sheepy) {
 
     private val pause = subcommand("pause") {
         withAliases("stop")
-        stringArgument(
-            "animationName",
-        )
+        stringArgument("animationName") {
+            replaceSuggestions(currentAnimationsSuggestion())
+        }
         anyExecutor { sender, args ->
             val animationName = args["animationName"] as String
 
@@ -147,7 +175,26 @@ class Sheepy2Command(plugin: Sheepy) {
             }
 
             animation.stop()
-            Utils.sendMessage(sender, "Paused ${Config.VAR_COLOR}${animation.name}")
+            Utils.sendMessage(sender, "Pausing ${Config.VAR_COLOR}${animation.name}")
+
+        }
+    }
+    private val resume = subcommand("resume") {
+        withAliases("start")
+        stringArgument("animationName") {
+            replaceSuggestions(currentAnimationsSuggestion())
+        }
+        anyExecutor { sender, args ->
+            val animationName = args["animationName"] as String
+
+            val animation = AnimationsPlayer.getAnimation(animationName)
+            if (animation == null) {
+                Utils.sendMessage(sender, "No animation ${Config.VAR_COLOR}$animationName")
+                return@anyExecutor
+            }
+
+            animation.start()
+            Utils.sendMessage(sender, "Resuming ${Config.VAR_COLOR}${animation.name}")
 
         }
     }
@@ -182,16 +229,14 @@ class Sheepy2Command(plugin: Sheepy) {
     private val particleScale = subcommand("particlescale") {
         withAliases("pscale")
         stringArgument("animationName") {
-            replaceSuggestions(
-                ArgumentSuggestions.strings { AnimationsPlayer.animationNames().toTypedArray() }
-            )
+            replaceSuggestions(currentAnimationsSuggestion())
         }
         floatArgument("particleScale", optional = true) {
             replaceSuggestions(ArgumentSuggestions.strings({ info ->
                 val animationName = info.previousArgs["animationName"] as String
                 val animation = AnimationsPlayer.getAnimation(animationName)
-                if (animation == null) return@strings arrayListOf<String>().toTypedArray()
-                return@strings arrayListOf<String>(animation.particleScale.toString()).toTypedArray()
+                if (animation == null) return@strings arrayOf()
+                return@strings arrayOf(animation.particleScale.toString())
             }))
         }
         anyExecutor { sender, args ->
@@ -217,5 +262,85 @@ class Sheepy2Command(plugin: Sheepy) {
                 "Set particle scale to ${Config.VAR_COLOR}${animation.particleScale} ${Config.PRIMARY_COLOR}for ${Config.VAR_COLOR}${animation.name}"
             )
         }
+    }
+
+    private val animationScale = subcommand("animationscale") {
+        withAliases("scale")
+        stringArgument("animationName") {
+            replaceSuggestions(currentAnimationsSuggestion())
+        }
+        floatArgument("animationScale", optional = true) {
+            replaceSuggestions(ArgumentSuggestions.strings({ info ->
+                val animationName = info.previousArgs["animationName"] as String
+                val animation = AnimationsPlayer.getAnimation(animationName)
+                if (animation == null) return@strings arrayOf()
+                return@strings arrayOf(animation.animationScale.toString())
+            }))
+        }
+        anyExecutor { sender, args ->
+            val animationName = args["animationName"] as String
+            val animationScale = args["animationScale"] as? Float
+            val animation = AnimationsPlayer.getAnimation(animationName)
+
+            if (animation == null) {
+                Utils.sendMessage(sender, "No animation ${Config.VAR_COLOR}${animationName}")
+                return@anyExecutor
+            }
+
+            if (animationScale == null) {
+                Utils.sendMessage(
+                    sender,
+                    "Current animation scale: ${Config.VAR_COLOR}${animation.animationScale}"
+                )
+                return@anyExecutor
+            }
+            animation.animationScale = animationScale
+            Utils.sendMessage(
+                sender,
+                "Set animation scale to ${Config.VAR_COLOR}${animation.animationScale} ${Config.PRIMARY_COLOR}for ${Config.VAR_COLOR}${animation.name}"
+            )
+        }
+    }
+
+    private val rotation = subcommand("rotation") {
+        stringArgument("animationName") {
+            replaceSuggestions(currentAnimationsSuggestion())
+        }
+        floatArgument("rotation", optional = true, min = 0f, max = 360f) {
+            replaceSuggestions(ArgumentSuggestions.strings({ info ->
+                val animationName = info.previousArgs["animationName"] as String
+                val animation = AnimationsPlayer.getAnimation(animationName)
+                if (animation == null) return@strings arrayOf()
+                return@strings arrayOf(Utils.toDegrees(animation.animationRotation).roundToInt().toString())
+            }))
+        }
+        anyExecutor { sender, args ->
+            val animationName = args["animationName"] as String
+            val rotation = args["rotation"] as? Float
+            val animation = AnimationsPlayer.getAnimation(animationName)
+
+            if (animation == null) {
+                Utils.sendMessage(sender, "No animation ${Config.VAR_COLOR}${animationName}")
+                return@anyExecutor
+            }
+
+            if (rotation == null) {
+                Utils.sendMessage(
+                    sender,
+                    "Current animation rotation: ${Config.VAR_COLOR}${Utils.toDegrees(animation.animationRotation)}°"
+                )
+                return@anyExecutor
+            }
+            animation.animationRotation = org.joml.Math.toRadians(rotation)
+            Utils.sendMessage(
+                sender,
+                "Set animation rotation to ${Config.VAR_COLOR}${rotation}° ${Config.PRIMARY_COLOR}for ${Config.VAR_COLOR}${animation.name}"
+            )
+        }
+    }
+
+
+    private fun currentAnimationsSuggestion(): ArgumentSuggestions<CommandSender>? {
+        return ArgumentSuggestions.strings { AnimationsPlayer.animationNames().toTypedArray() }
     }
 }

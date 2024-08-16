@@ -16,7 +16,6 @@ class Animation(
     val name: String,
     private val file: File,
     private val player: Player?,
-    plugin: Sheepy,
     var location: Location,
 ) {
 
@@ -32,9 +31,8 @@ class Animation(
 
     var particleScale = 1.0f
     var animationScale = 1.0f
+    var animationRotation = 0.0f
     var repeat = false
-
-    var maxParticlesPerFrame = 1000
 
     var shouldBeDeleted = false
 
@@ -66,7 +64,7 @@ class Animation(
         return reader.position() >= reader.length()
     }
 
-    fun getNextFrame(offset: Vector3f): Frame? {
+    fun getNextFrame(worldLocationOffset: Vector3f): Frame? {
 
         if (animationIsOnLastFrame()) {
             if (repeat) {
@@ -90,30 +88,26 @@ class Animation(
 
             // loop over particles and add them to frame
             for (i in 0 until length) {
+                val position = Vector3f(
+                    getPosComponent() * animationScale,
+                    getPosComponent() * animationScale,
+                    getPosComponent() * animationScale
+                )
+                position.rotateY(animationRotation)
+                position.add(worldLocationOffset)
                 frame.animationParticles[i] = AnimationParticle(
-                    x = getPosComponent() + offset.x,
-                    y = getPosComponent() + offset.y,
-                    z = getPosComponent() + offset.z,
+                    x = position.x,
+                    y = position.y,
+                    z = position.z,
                     color = Color.fromARGB(getInt()),
                 )
             }
-//            Utils.sendMessage(
-//                player!!,
-//                "read frame with length ${frame.animationParticles.size}, remaining: ${bb.hasRemaining()}"
-//            )
         } else {
             playing.set(false)
             player?.let { Utils.sendMessage(it, "buffer empty") }
             return null
         }
 
-//        val p1 = frame.animationParticles.getOrNull(0)
-//
-//        val p1pos: Vector = p1?.let { p ->
-//            Vector(p.x + location.x, p.y + location.y, p.z + location.z)
-//        } ?: Vector(0, 0, 0)
-//
-//        player?.sendActionBar(Component.text("${ChatColor.GRAY}particles in current frame: ${frame.animationParticles.size}, running for: ${i}, pos: ${p1pos.x.toInt()}, ${p1pos.y.toInt()}, ${p1pos.z.toInt()}"))
         i++
         return frame
     }
