@@ -7,10 +7,10 @@ import kotlin.text.replace
 
 object Utils {
     var animsInFolder = listOf<File>()
-    private val mm = MiniMessage.miniMessage()
+    val mm = MiniMessage.miniMessage()
 
     fun sendMessage(sender: CommandSender, message: String) {
-        val text = mm.deserialize("<gray>[<gradient:#e64ffe:#ff3dd4>Sheepy</gradient><gray>] <reset>$message")
+        val text = mm.deserialize("${Config.PLUGIN_PREFIX} <reset>$message")
         sender.sendMessage(text)
     }
 

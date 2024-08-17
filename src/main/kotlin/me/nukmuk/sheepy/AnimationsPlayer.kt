@@ -1,6 +1,5 @@
 package me.nukmuk.sheepy
 
-import org.bukkit.ChatColor
 import org.bukkit.Location
 import org.bukkit.Particle
 import org.bukkit.scheduler.BukkitRunnable
@@ -45,7 +44,7 @@ object AnimationsPlayer {
             var i = 0
             override fun run() {
                 if (processing) {
-                    sendDebugPlayersActionBar("${ChatColor.RED}previous frame not played yet, animations playing: ${animations.keys} i: $i")
+                    sendDebugPlayersActionBar("${Config.ERROR_COLOR}previous frame not played yet, animations playing: ${animations.keys} i: $i")
                     return
                 }
                 if (animations.isEmpty()) return
@@ -118,6 +117,6 @@ object AnimationsPlayer {
 
     fun sendDebugPlayersActionBar(message: String) {
         plugin.server.onlinePlayers.filter { debugPlayers.contains(it.uniqueId) }
-            .forEach { it.sendActionBar(message) }
+            .forEach { it.sendActionBar(Utils.mm.deserialize(message)) }
     }
 }
