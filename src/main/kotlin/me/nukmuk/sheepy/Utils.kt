@@ -1,15 +1,17 @@
 package me.nukmuk.sheepy
 
-import org.bukkit.ChatColor
+import net.kyori.adventure.text.minimessage.MiniMessage
 import org.bukkit.command.CommandSender
 import java.io.File
 import kotlin.text.replace
 
 object Utils {
     var animsInFolder = listOf<File>()
+    private val mm = MiniMessage.miniMessage()
 
     fun sendMessage(sender: CommandSender, message: String) {
-        sender.sendMessage("${ChatColor.GREEN}[Sheepy] ${Config.PRIMARY_COLOR}$message")
+        val text = mm.deserialize("<gray>[<gradient:#e64ffe:#ff3dd4>Sheepy</gradient><gray>] <reset>$message")
+        sender.sendMessage(text)
     }
 
     // from https://stackoverflow.com/a/6162687

@@ -6,8 +6,6 @@ import dev.jorel.commandapi.kotlindsl.booleanArgument
 import dev.jorel.commandapi.kotlindsl.commandAPICommand
 import dev.jorel.commandapi.kotlindsl.floatArgument
 import dev.jorel.commandapi.kotlindsl.integerArgument
-import dev.jorel.commandapi.kotlindsl.itemStackArgument
-import dev.jorel.commandapi.kotlindsl.literalArgument
 import dev.jorel.commandapi.kotlindsl.playerExecutor
 import dev.jorel.commandapi.kotlindsl.stringArgument
 import dev.jorel.commandapi.kotlindsl.subcommand
@@ -19,7 +17,6 @@ import org.bukkit.ChatColor
 import org.bukkit.FluidCollisionMode
 import org.bukkit.Location
 import org.bukkit.command.CommandSender
-import org.bukkit.inventory.ItemStack
 import kotlin.Boolean
 import kotlin.math.roundToInt
 
@@ -40,16 +37,7 @@ class SheepyCommand(plugin: Sheepy) {
             subcommand(particleScale)
             subcommand(animationScale)
             subcommand(rotation)
-
-            literalArgument("give")
-            itemStackArgument("item")
-            integerArgument("amount", optional = true)
-            playerExecutor { player, args ->
-                val itemStack: ItemStack = args["item"] as ItemStack
-                val amount: Int = args.getOptional("amount").orElse(1) as Int
-                itemStack.amount = amount
-                player.inventory.addItem(itemStack)
-            }
+            subcommand(debug)
         }
     }
 
@@ -210,15 +198,15 @@ class SheepyCommand(plugin: Sheepy) {
         withAliases("gmax")
         integerArgument("amount", optional = true)
         anyExecutor { sender, args ->
-            val amount = args["amount"] as? Int
-            if (amount == null) {
+            val newMaxAmount = args["amount"] as? Int
+            if (newMaxAmount == null) {
                 Utils.sendMessage(
                     sender,
                     "Current max particles per tick: ${Config.VAR_COLOR}${AnimationsPlayer.maxParticlesPerTick}"
                 )
                 return@anyExecutor
             }
-            AnimationsPlayer.maxParticlesPerTick = amount.toInt()
+            AnimationsPlayer.maxParticlesPerTick = newMaxAmount.toInt()
             Utils.sendMessage(
                 sender,
                 "Set max particles per tick to ${Config.VAR_COLOR}${AnimationsPlayer.maxParticlesPerTick}"
@@ -241,7 +229,7 @@ class SheepyCommand(plugin: Sheepy) {
         }
         anyExecutor { sender, args ->
             val animationName = args["animationName"] as String
-            val particleScale = args["particleScale"] as? Float
+            val newParticleScale = args["particleScale"] as? Float
             val animation = AnimationsPlayer.getAnimation(animationName)
 
             if (animation == null) {
@@ -249,14 +237,14 @@ class SheepyCommand(plugin: Sheepy) {
                 return@anyExecutor
             }
 
-            if (particleScale == null) {
+            if (newParticleScale == null) {
                 Utils.sendMessage(
                     sender,
                     "Current particle scale: ${Config.VAR_COLOR}${animation.particleScale}"
                 )
                 return@anyExecutor
             }
-            animation.particleScale = particleScale
+            animation.particleScale = newParticleScale
             Utils.sendMessage(
                 sender,
                 "Set particle scale to ${Config.VAR_COLOR}${animation.particleScale} ${Config.PRIMARY_COLOR}for ${Config.VAR_COLOR}${animation.name}"
@@ -279,7 +267,7 @@ class SheepyCommand(plugin: Sheepy) {
         }
         anyExecutor { sender, args ->
             val animationName = args["animationName"] as String
-            val animationScale = args["animationScale"] as? Float
+            val newAnimationScale = args["animationScale"] as? Float
             val animation = AnimationsPlayer.getAnimation(animationName)
 
             if (animation == null) {
@@ -287,18 +275,30 @@ class SheepyCommand(plugin: Sheepy) {
                 return@anyExecutor
             }
 
-            if (animationScale == null) {
+            if (newAnimationScale == null) {
                 Utils.sendMessage(
                     sender,
                     "Current animation scale: ${Config.VAR_COLOR}${animation.animationScale}"
                 )
                 return@anyExecutor
             }
-            animation.animationScale = animationScale
+            animation.animationScale = newAnimationScale
             Utils.sendMessage(
                 sender,
                 "Set animation scale to ${Config.VAR_COLOR}${animation.animationScale} ${Config.PRIMARY_COLOR}for ${Config.VAR_COLOR}${animation.name}"
             )
+        }
+    }
+
+    private val debug = subcommand("debug") {
+        playerExecutor { player, args ->
+            if (!AnimationsPlayer.debugPlayers.contains(player.uniqueId)) {
+                AnimationsPlayer.debugPlayers.add(player.uniqueId)
+                Utils.sendMessage(player, "Debug mode on")
+                return@playerExecutor
+            }
+            AnimationsPlayer.debugPlayers.remove(player.uniqueId)
+            Utils.sendMessage(player, "Debug mode off")
         }
     }
 
@@ -316,7 +316,7 @@ class SheepyCommand(plugin: Sheepy) {
         }
         anyExecutor { sender, args ->
             val animationName = args["animationName"] as String
-            val rotation = args["rotation"] as? Float
+            val newRotation = args["rotation"] as? Float
             val animation = AnimationsPlayer.getAnimation(animationName)
 
             if (animation == null) {
@@ -324,17 +324,17 @@ class SheepyCommand(plugin: Sheepy) {
                 return@anyExecutor
             }
 
-            if (rotation == null) {
+            if (newRotation == null) {
                 Utils.sendMessage(
                     sender,
                     "Current animation rotation: ${Config.VAR_COLOR}${Utils.toDegrees(animation.animationRotation)}°"
                 )
                 return@anyExecutor
             }
-            animation.animationRotation = org.joml.Math.toRadians(rotation)
+            animation.animationRotation = org.joml.Math.toRadians(newRotation)
             Utils.sendMessage(
                 sender,
-                "Set animation rotation to ${Config.VAR_COLOR}${rotation}° ${Config.PRIMARY_COLOR}for ${Config.VAR_COLOR}${animation.name}"
+                "Set animation rotation to ${Config.VAR_COLOR}${newRotation}° ${Config.PRIMARY_COLOR}for ${Config.VAR_COLOR}${animation.name}"
             )
         }
     }

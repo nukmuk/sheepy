@@ -1,14 +1,12 @@
 package me.nukmuk.sheepy
 
-import org.bukkit.ChatColor
-
 object Config {
     const val FILE_EXTENSION = "shny"
-    val VAR_COLOR = ChatColor.GRAY
-    val PRIMARY_COLOR = ChatColor.RESET
-    val ERROR_COLOR = ChatColor.RED
+    const val VAR_COLOR = "<gray>"
+    const val PRIMARY_COLOR = "<white>"
+    const val ERROR_COLOR = "<red>"
 
     object Strings {
-        val NO_PERMISSION = "${ERROR_COLOR}You don't have permissions to this command"
+        const val NO_PERMISSION = "${ERROR_COLOR}You don't have permissions to this command"
     }
 }

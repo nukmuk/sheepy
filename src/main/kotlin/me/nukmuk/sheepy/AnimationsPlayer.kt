@@ -7,12 +7,14 @@ import org.bukkit.scheduler.BukkitRunnable
 import org.bukkit.scheduler.BukkitTask
 import org.joml.Vector3f
 import java.io.File
+import java.util.UUID
 import kotlin.math.ceil
 
 object AnimationsPlayer {
     val animations = HashMap<String, Animation>()
     private lateinit var plugin: Sheepy
     private lateinit var task: BukkitTask
+    val debugPlayers = HashSet<UUID>()
 
     var maxParticlesPerTick = 2000
 
@@ -43,7 +45,7 @@ object AnimationsPlayer {
             var i = 0
             override fun run() {
                 if (processing) {
-                    sendOpPlayersActionBar("${ChatColor.RED}previous frame not played yet, animations playing: ${animations.keys} i: $i")
+                    sendDebugPlayersActionBar("${ChatColor.RED}previous frame not played yet, animations playing: ${animations.keys} i: $i")
                     return
                 }
                 if (animations.isEmpty()) return
@@ -66,7 +68,7 @@ object AnimationsPlayer {
                     }
                     framesToBePlayed.add(frame)
                 }
-                sendOpPlayersActionBar(
+                sendDebugPlayersActionBar(
                     "${Config.PRIMARY_COLOR}playing: ${Config.VAR_COLOR}${animations.keys} ${Config.PRIMARY_COLOR}i: ${Config.VAR_COLOR}$i ${Config.PRIMARY_COLOR}total particles loaded: ${Config.VAR_COLOR}${
                         framesToBePlayed.fold(
                             0
@@ -114,8 +116,8 @@ object AnimationsPlayer {
         }
     }
 
-    fun sendOpPlayersActionBar(message: String) {
-        plugin.server.onlinePlayers.filter { it.isOp }
+    fun sendDebugPlayersActionBar(message: String) {
+        plugin.server.onlinePlayers.filter { debugPlayers.contains(it.uniqueId) }
             .forEach { it.sendActionBar(message) }
     }
 }

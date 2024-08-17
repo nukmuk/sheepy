@@ -1,0 +1,8 @@
+colors:
+//            mm.deserialize("<gray>[<gradient:#ff6583:#f564a0>Sheepy</gradient><gray>] <reset>$message")
+//            mm.deserialize("<gray>[<gradient:#fe925e:#eba133>Sheepy</gradient><gray>] <reset>$message")
+//        	  mm.deserialize("<gray>[<gradient:#b4f061:#4cfdac>Sheepy</gradient><gray>] <reset>$message")
+//            mm.deserialize("<gray>[<gradient:#02c3d8:#89a9fe>Sheepy</gradient><gray>] <reset>$message")
+//            mm.deserialize("<gray>[<gradient:#e286ff:#fe7bd5>Sheepy</gradient><gray>] <reset>$message")
+//            mm.deserialize("<gray>[<gradient:#db35fe:#fb04c7>Sheepy</gradient><gray>] <reset>$message")
+//            mm.deserialize("<gray>[<gradient:#e436ff:#fe15d2>Sheepy</gradient><gray>] <reset>$message")

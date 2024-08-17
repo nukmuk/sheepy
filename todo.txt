@@ -2,6 +2,7 @@ next:
 add debug list (only display action bar to these players), /sh debug to toggle
 effects when walking inside animations
 config file to toggle particles "force" property, toggle with command too
+fix command aliases/usages (?)
 
 add other particles, display entities
 maybe make format big endian instead
