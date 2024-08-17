@@ -6,11 +6,13 @@ import dev.jorel.commandapi.kotlindsl.booleanArgument
 import dev.jorel.commandapi.kotlindsl.commandAPICommand
 import dev.jorel.commandapi.kotlindsl.floatArgument
 import dev.jorel.commandapi.kotlindsl.integerArgument
+import dev.jorel.commandapi.kotlindsl.multiLiteralArgument
 import dev.jorel.commandapi.kotlindsl.playerExecutor
 import dev.jorel.commandapi.kotlindsl.stringArgument
 import dev.jorel.commandapi.kotlindsl.subcommand
-import me.nukmuk.sheepy.AnimationsPlayer
+import me.nukmuk.sheepy.AnimationsManager
 import me.nukmuk.sheepy.Config
+import me.nukmuk.sheepy.RenderType
 import me.nukmuk.sheepy.Sheepy
 import me.nukmuk.sheepy.Utils
 import org.bukkit.ChatColor
@@ -36,8 +38,10 @@ class SheepyCommand(plugin: Sheepy) {
             subcommand(globalMaxParticlesPerTick)
             subcommand(particleScale)
             subcommand(animationScale)
+            subcommand(scale)
             subcommand(rotation)
             subcommand(debug)
+            subcommand(renderType)
         }
     }
 
@@ -46,7 +50,7 @@ class SheepyCommand(plugin: Sheepy) {
             val files = Utils.getAnimsInFolder(plugin)
             Utils.sendMessage(
                 sender,
-                if (!files.isEmpty()) files.joinToString("${ChatColor.GRAY}, ${ChatColor.RESET}") { file -> file.name } else "Folder empty")
+                if (!files.isEmpty()) files.joinToString("<gray>, ${Config.PRIMARY_COLOR}") { file -> file.name } else "Folder empty")
         }
     }
 
@@ -72,7 +76,7 @@ class SheepyCommand(plugin: Sheepy) {
             val repeat = (args["repeat"] ?: false) as Boolean
             val scale = (args["scale"]) as? Float
 
-            if (AnimationsPlayer.animationNames().contains(animationName)) {
+            if (AnimationsManager.animationNames().contains(animationName)) {
                 Utils.sendMessage(
                     player,
                     "Animation with name ${Config.VAR_COLOR}${animationName} ${Config.PRIMARY_COLOR}already exists"
@@ -101,7 +105,7 @@ class SheepyCommand(plugin: Sheepy) {
             if (repeat) msg += "${Config.PRIMARY_COLOR}, repeat ${Config.VAR_COLOR}on"
 
 
-            val animation = AnimationsPlayer.createAnimation(
+            val animation = AnimationsManager.createAnimation(
                 animationName,
                 file,
                 targetLocation,
@@ -128,7 +132,7 @@ class SheepyCommand(plugin: Sheepy) {
         anyExecutor { sender, args ->
             val animationName = args["animationName"] as String
 
-            val removedAnimation = AnimationsPlayer.getAnimation(animationName)
+            val removedAnimation = AnimationsManager.getAnimation(animationName)
             removedAnimation?.remove()
             if (removedAnimation == null) {
                 Utils.sendMessage(sender, "No animation ${Config.VAR_COLOR}${animationName}")
@@ -142,9 +146,9 @@ class SheepyCommand(plugin: Sheepy) {
         anyExecutor { sender, args ->
             Utils.sendMessage(
                 sender,
-                "Removing ${Config.VAR_COLOR}${AnimationsPlayer.animationNames().size} ${Config.PRIMARY_COLOR}animations"
+                "Removing ${Config.VAR_COLOR}${AnimationsManager.animationNames().size} ${Config.PRIMARY_COLOR}animations"
             )
-            AnimationsPlayer.clearAnimations()
+            AnimationsManager.clearAnimations()
         }
     }
 
@@ -156,7 +160,7 @@ class SheepyCommand(plugin: Sheepy) {
         anyExecutor { sender, args ->
             val animationName = args["animationName"] as String
 
-            val animation = AnimationsPlayer.getAnimation(animationName)
+            val animation = AnimationsManager.getAnimation(animationName)
             if (animation == null) {
                 Utils.sendMessage(sender, "No animation ${Config.VAR_COLOR}$animationName")
                 return@anyExecutor
@@ -175,7 +179,7 @@ class SheepyCommand(plugin: Sheepy) {
         anyExecutor { sender, args ->
             val animationName = args["animationName"] as String
 
-            val animation = AnimationsPlayer.getAnimation(animationName)
+            val animation = AnimationsManager.getAnimation(animationName)
             if (animation == null) {
                 Utils.sendMessage(sender, "No animation ${Config.VAR_COLOR}$animationName")
                 return@anyExecutor
@@ -190,7 +194,7 @@ class SheepyCommand(plugin: Sheepy) {
     private val list = subcommand("list") {
         withAliases("ls")
         anyExecutor { sender, args ->
-            Utils.sendMessage(sender, "Animations: ${Config.VAR_COLOR}${AnimationsPlayer.animationNames()}")
+            Utils.sendMessage(sender, "Animations: ${Config.VAR_COLOR}${AnimationsManager.animationNames()}")
         }
     }
 
@@ -202,14 +206,14 @@ class SheepyCommand(plugin: Sheepy) {
             if (newMaxAmount == null) {
                 Utils.sendMessage(
                     sender,
-                    "Current max particles per tick: ${Config.VAR_COLOR}${AnimationsPlayer.maxParticlesPerTick}"
+                    "Current max particles per tick: ${Config.VAR_COLOR}${AnimationsManager.maxParticlesPerTick}"
                 )
                 return@anyExecutor
             }
-            AnimationsPlayer.maxParticlesPerTick = newMaxAmount.toInt()
+            AnimationsManager.maxParticlesPerTick = newMaxAmount.toInt()
             Utils.sendMessage(
                 sender,
-                "Set max particles per tick to ${Config.VAR_COLOR}${AnimationsPlayer.maxParticlesPerTick}"
+                "Set max particles per tick to ${Config.VAR_COLOR}${AnimationsManager.maxParticlesPerTick}"
             )
         }
     }
@@ -222,7 +226,7 @@ class SheepyCommand(plugin: Sheepy) {
         floatArgument("particleScale", optional = true) {
             replaceSuggestions(ArgumentSuggestions.strings({ info ->
                 val animationName = info.previousArgs["animationName"] as String
-                val animation = AnimationsPlayer.getAnimation(animationName)
+                val animation = AnimationsManager.getAnimation(animationName)
                 if (animation == null) return@strings arrayOf()
                 return@strings arrayOf(animation.particleScale.toString())
             }))
@@ -230,7 +234,7 @@ class SheepyCommand(plugin: Sheepy) {
         anyExecutor { sender, args ->
             val animationName = args["animationName"] as String
             val newParticleScale = args["particleScale"] as? Float
-            val animation = AnimationsPlayer.getAnimation(animationName)
+            val animation = AnimationsManager.getAnimation(animationName)
 
             if (animation == null) {
                 Utils.sendMessage(sender, "No animation ${Config.VAR_COLOR}${animationName}")
@@ -253,14 +257,14 @@ class SheepyCommand(plugin: Sheepy) {
     }
 
     private val animationScale = subcommand("animationscale") {
-        withAliases("scale")
+        withAliases("ascale")
         stringArgument("animationName") {
             replaceSuggestions(currentAnimationsSuggestion())
         }
         floatArgument("animationScale", optional = true) {
             replaceSuggestions(ArgumentSuggestions.strings({ info ->
                 val animationName = info.previousArgs["animationName"] as String
-                val animation = AnimationsPlayer.getAnimation(animationName)
+                val animation = AnimationsManager.getAnimation(animationName)
                 if (animation == null) return@strings arrayOf()
                 return@strings arrayOf(animation.animationScale.toString())
             }))
@@ -268,7 +272,7 @@ class SheepyCommand(plugin: Sheepy) {
         anyExecutor { sender, args ->
             val animationName = args["animationName"] as String
             val newAnimationScale = args["animationScale"] as? Float
-            val animation = AnimationsPlayer.getAnimation(animationName)
+            val animation = AnimationsManager.getAnimation(animationName)
 
             if (animation == null) {
                 Utils.sendMessage(sender, "No animation ${Config.VAR_COLOR}${animationName}")
@@ -290,14 +294,52 @@ class SheepyCommand(plugin: Sheepy) {
         }
     }
 
+    private val scale = subcommand("scale") {
+        stringArgument("animationName") {
+            replaceSuggestions(currentAnimationsSuggestion())
+        }
+        floatArgument("scale", optional = true) {
+            replaceSuggestions(ArgumentSuggestions.strings({ info ->
+                val animationName = info.previousArgs["animationName"] as String
+                val animation = AnimationsManager.getAnimation(animationName)
+                if (animation == null) return@strings arrayOf()
+                return@strings arrayOf(animation.animationScale.toString(), animation.particleScale.toString())
+            }))
+        }
+        anyExecutor { sender, args ->
+            val animationName = args["animationName"] as String
+            val newScale = args["scale"] as? Float
+            val animation = AnimationsManager.getAnimation(animationName)
+
+            if (animation == null) {
+                Utils.sendMessage(sender, "No animation ${Config.VAR_COLOR}${animationName}")
+                return@anyExecutor
+            }
+
+            if (newScale == null) {
+                Utils.sendMessage(
+                    sender,
+                    "Current animation scale: ${Config.VAR_COLOR}${animation.animationScale} ${Config.PRIMARY_COLOR}and particle scale: ${Config.VAR_COLOR}${animation.particleScale}"
+                )
+                return@anyExecutor
+            }
+            animation.animationScale = newScale
+            animation.particleScale = newScale
+            Utils.sendMessage(
+                sender,
+                "Set animation and particle scale to ${Config.VAR_COLOR}${newScale} ${Config.PRIMARY_COLOR}for ${Config.VAR_COLOR}${animation.name}"
+            )
+        }
+    }
+
     private val debug = subcommand("debug") {
         playerExecutor { player, args ->
-            if (!AnimationsPlayer.debugPlayers.contains(player.uniqueId)) {
-                AnimationsPlayer.debugPlayers.add(player.uniqueId)
+            if (!AnimationsManager.debugPlayers.contains(player.uniqueId)) {
+                AnimationsManager.debugPlayers.add(player.uniqueId)
                 Utils.sendMessage(player, "Debug mode on")
                 return@playerExecutor
             }
-            AnimationsPlayer.debugPlayers.remove(player.uniqueId)
+            AnimationsManager.debugPlayers.remove(player.uniqueId)
             Utils.sendMessage(player, "Debug mode off")
         }
     }
@@ -309,7 +351,7 @@ class SheepyCommand(plugin: Sheepy) {
         floatArgument("rotation", optional = true, min = 0f, max = 360f) {
             replaceSuggestions(ArgumentSuggestions.strings({ info ->
                 val animationName = info.previousArgs["animationName"] as String
-                val animation = AnimationsPlayer.getAnimation(animationName)
+                val animation = AnimationsManager.getAnimation(animationName)
                 if (animation == null) return@strings arrayOf()
                 return@strings arrayOf(Utils.toDegrees(animation.animationRotation).roundToInt().toString())
             }))
@@ -317,7 +359,7 @@ class SheepyCommand(plugin: Sheepy) {
         anyExecutor { sender, args ->
             val animationName = args["animationName"] as String
             val newRotation = args["rotation"] as? Float
-            val animation = AnimationsPlayer.getAnimation(animationName)
+            val animation = AnimationsManager.getAnimation(animationName)
 
             if (animation == null) {
                 Utils.sendMessage(sender, "No animation ${Config.VAR_COLOR}${animationName}")
@@ -339,8 +381,53 @@ class SheepyCommand(plugin: Sheepy) {
         }
     }
 
+    private val renderType = subcommand("rendertype") {
+        stringArgument("animationName") {
+            replaceSuggestions(currentAnimationsSuggestion())
+        }
+        multiLiteralArgument(
+            "renderType",
+            optional = true,
+            literals = RenderType.entries.map { it.toString() }.toTypedArray()
+        )
+        anyExecutor { sender, args ->
+            val animationName = args["animationName"] as String
+            val newRenderType = RenderType.entries.find { it.name == args["renderType"] }
+            val animation = AnimationsManager.getAnimation(animationName)
+
+            Utils.sendMessage(sender, "arg: $newRenderType")
+
+            if (animation == null) {
+                Utils.sendMessage(sender, "No animation ${Config.VAR_COLOR}${animationName}")
+                return@anyExecutor
+            }
+
+            if (newRenderType == null) {
+                Utils.sendMessage(
+                    sender,
+                    "Current animation render type: ${Config.VAR_COLOR}${animation.renderType}"
+                )
+                return@anyExecutor
+            }
+
+            if (newRenderType == RenderType.BLOCK_DISPLAY) {
+                val value = AnimationsManager.reservedEntityIds[1]
+                Utils.sendMessage(sender, "Value is $value")
+                if (value == 0) {
+                    AnimationsManager.initializeEntityIds()
+                }
+            }
+
+            animation.renderType = newRenderType
+            Utils.sendMessage(
+                sender,
+                "Set render type to ${Config.VAR_COLOR}${newRenderType} ${Config.PRIMARY_COLOR}for animation ${Config.VAR_COLOR}${animation.name}"
+            )
+        }
+    }
+
 
     private fun currentAnimationsSuggestion(): ArgumentSuggestions<CommandSender>? {
-        return ArgumentSuggestions.strings { AnimationsPlayer.animationNames().toTypedArray() }
+        return ArgumentSuggestions.strings { AnimationsManager.animationNames().toTypedArray() }
     }
 }

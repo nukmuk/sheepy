@@ -1,6 +1,6 @@
 package me.nukmuk.sheepy.commands
 
-import me.nukmuk.sheepy.AnimationsPlayer
+import me.nukmuk.sheepy.AnimationsManager
 import me.nukmuk.sheepy.Config
 import me.nukmuk.sheepy.Sheepy
 import me.nukmuk.sheepy.Utils
@@ -68,7 +68,7 @@ class LegacySheepyCommand(private val plugin: Sheepy) : CommandExecutor, TabComp
 
             if (animationName == null) animationName = fileName
 
-            if (AnimationsPlayer.animationNames().contains(animationName)) {
+            if (AnimationsManager.animationNames().contains(animationName)) {
                 Utils.sendMessage(player, "Animation ${Config.VAR_COLOR}${animationName} already exists")
                 return true
             }
@@ -87,7 +87,7 @@ class LegacySheepyCommand(private val plugin: Sheepy) : CommandExecutor, TabComp
 
             Utils.sendMessage(player, msg)
 
-            val animation = AnimationsPlayer.createAnimation(
+            val animation = AnimationsManager.createAnimation(
                 animationName,
                 file,
                 player.getTargetBlock(null, 10).location.add(0.0, 1.0, 0.0)
@@ -104,7 +104,7 @@ class LegacySheepyCommand(private val plugin: Sheepy) : CommandExecutor, TabComp
             val animationName = args.getOrNull(1)
             if (animationName == null) return false
 
-            val removedAnimation = AnimationsPlayer.getAnimation(animationName)
+            val removedAnimation = AnimationsManager.getAnimation(animationName)
             removedAnimation?.remove()
             if (removedAnimation != null) {
                 Utils.sendMessage(player, "Removed and stopped ${Config.VAR_COLOR}${removedAnimation.name}")
@@ -113,15 +113,15 @@ class LegacySheepyCommand(private val plugin: Sheepy) : CommandExecutor, TabComp
             }
             return true
         } else if (subcommand == "clear") {
-            Utils.sendMessage(player, "stopping ${Config.VAR_COLOR}${AnimationsPlayer.animationNames().size}")
-            AnimationsPlayer.clearAnimations()
+            Utils.sendMessage(player, "stopping ${Config.VAR_COLOR}${AnimationsManager.animationNames().size}")
+            AnimationsManager.clearAnimations()
             return true
 
         } else if (subcommand == "stop" || subcommand == "pause" || subcommand == "start") {
             val animationName = Utils.sanitizeString(args.getOrNull(1))
 
             if (animationName == null) return false
-            val animation = AnimationsPlayer.getAnimation(animationName)
+            val animation = AnimationsManager.getAnimation(animationName)
             if (animation == null) {
                 Utils.sendMessage(player, "No animation ${Config.VAR_COLOR}$animationName")
                 return true
@@ -137,14 +137,14 @@ class LegacySheepyCommand(private val plugin: Sheepy) : CommandExecutor, TabComp
 
             return true
         } else if (subcommand == "step") {
-            if (AnimationsPlayer.animationNames().isEmpty()) {
+            if (AnimationsManager.animationNames().isEmpty()) {
                 Utils.sendMessage(player, "No animations found")
             } else {
                 Utils.sendMessage(player, "Not implemented")
             }
             return true
         } else if (subcommand == "list" || subcommand == "ls") {
-            Utils.sendMessage(player, "Animations: ${Config.VAR_COLOR}${AnimationsPlayer.animationNames()}")
+            Utils.sendMessage(player, "Animations: ${Config.VAR_COLOR}${AnimationsManager.animationNames()}")
             return true
         } else if (subcommand == "tasks") {
             Utils.sendMessage(player, "activeWorkers: ${Config.VAR_COLOR}${Bukkit.getScheduler().activeWorkers}")
@@ -155,11 +155,11 @@ class LegacySheepyCommand(private val plugin: Sheepy) : CommandExecutor, TabComp
             if (newMax == null) {
                 return false
             }
-            AnimationsPlayer.maxParticlesPerTick = newMax
+            AnimationsManager.maxParticlesPerTick = newMax
             return true
         } else if (subcommand == "pscale") {
             val animName = args.getOrNull(1).toString()
-            val anim = AnimationsPlayer.getAnimation(animName)
+            val anim = AnimationsManager.getAnimation(animName)
             val newScale = args.getOrNull(2)?.toFloatOrNull()
             anim?.particleScale = newScale ?: anim.particleScale
             return true

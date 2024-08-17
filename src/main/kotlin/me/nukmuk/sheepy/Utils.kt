@@ -6,7 +6,10 @@ import java.io.File
 import kotlin.text.replace
 
 object Utils {
-    var animsInFolder = listOf<File>()
+    private var _animsInFolder = listOf<File>()
+    val animsInFolder: List<File>
+        get() = _animsInFolder
+
     val mm = MiniMessage.miniMessage()
 
     fun sendMessage(sender: CommandSender, message: String) {
@@ -49,7 +52,7 @@ object Utils {
         val files = animFolder.listFiles()?.filter { file -> file.extension == Config.FILE_EXTENSION }
 
         if (files != null) {
-            animsInFolder = files
+            _animsInFolder = files
         } else {
             return listOf()
         }

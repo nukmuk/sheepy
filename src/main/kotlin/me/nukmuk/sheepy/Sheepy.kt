@@ -17,14 +17,14 @@ class Sheepy : JavaPlugin() {
         CommandAPI.onEnable()
 //        getCommand("sheepy")?.setExecutor(LegacySheepyCommand(this))
 //        getCommand("misc")?.setExecutor(MiscCommand(this))
-        AnimationsPlayer.initialize(this)
+        AnimationsManager.initialize(this)
         SheepyCommand(this).register()
         Utils.getAnimsInFolder(this)
     }
 
     override fun onDisable() {
         // Plugin shutdown logic
-        AnimationsPlayer.clearAnimations()
+        AnimationsManager.clearAnimations()
         CommandAPI.onDisable()
     }
 }

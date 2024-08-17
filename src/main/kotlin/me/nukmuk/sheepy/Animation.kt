@@ -14,7 +14,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 
 class Animation(
     val name: String,
-    private val file: File,
+    file: File,
     private val player: Player?,
     var location: Location,
 ) {
@@ -33,6 +33,7 @@ class Animation(
     var animationScale = 1.0f
     var animationRotation = 0.0f
     var repeat = false
+    var renderType = RenderType.PARTICLE
 
     var shouldBeDeleted = false
 

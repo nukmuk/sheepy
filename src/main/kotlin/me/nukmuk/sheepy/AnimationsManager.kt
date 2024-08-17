@@ -1,7 +1,7 @@
 package me.nukmuk.sheepy
 
 import org.bukkit.Location
-import org.bukkit.Particle
+import org.bukkit.craftbukkit.CraftWorld
 import org.bukkit.scheduler.BukkitRunnable
 import org.bukkit.scheduler.BukkitTask
 import org.joml.Vector3f
@@ -9,11 +9,12 @@ import java.io.File
 import java.util.UUID
 import kotlin.math.ceil
 
-object AnimationsPlayer {
+object AnimationsManager {
     val animations = HashMap<String, Animation>()
     private lateinit var plugin: Sheepy
     private lateinit var task: BukkitTask
     val debugPlayers = HashSet<UUID>()
+    val reservedEntityIds = IntArray(16384)
 
     var maxParticlesPerTick = 2000
 
@@ -79,8 +80,16 @@ object AnimationsPlayer {
                     return
                 }
                 val maxParticles: Int = ceil((maxParticlesPerTick.toDouble() / framesToBePlayed.size)).toInt()
+
                 framesToBePlayed.forEach { frame ->
-                    playFrame(frame, maxParticles)
+                    when (frame.animation.renderType) {
+                        RenderType.PARTICLE -> FrameRenderer.playFrameWithParticles(frame, maxParticles)
+                        RenderType.BLOCK_DISPLAY -> FrameRenderer.playFrameWithBlockDisplays(
+                            frame,
+                            maxParticles,
+                            plugin
+                        )
+                    }
                 }
                 i++
                 processing = false
@@ -88,35 +97,18 @@ object AnimationsPlayer {
         }.runTaskTimerAsynchronously(plugin, 0L, 1L)
     }
 
-    private fun playFrame(frame: Frame, maxParticles: Int) {
-        val total = frame.animationParticles.size
-        val particleScale = frame.animation.particleScale
-
-        val divider: Int = if (maxParticles == 0) 0 else total / maxParticles
-
-        val scaleMultiplier = 1 + Math.clamp(divider / 30.0f, 0.0f, 2.0f)
-
-        frame.animationParticles.forEachIndexed { idx, p ->
-            if (p == null) return
-            if (divider != 0 && idx % divider != 0) return@forEachIndexed
-            frame.animation.world.spawnParticle(
-                Particle.DUST,
-                p.x.toDouble(),
-                p.y.toDouble(),
-                p.z.toDouble(),
-                1,
-                0.0,
-                0.0,
-                0.0,
-                0.0,
-                Particle.DustOptions(p.color, p.scale.toFloat() / 255 * particleScale * scaleMultiplier * 5),
-                true
-            )
-        }
-    }
-
     fun sendDebugPlayersActionBar(message: String) {
         plugin.server.onlinePlayers.filter { debugPlayers.contains(it.uniqueId) }
             .forEach { it.sendActionBar(Utils.mm.deserialize(message)) }
+    }
+
+    fun initializeEntityIds() {
+        val entityType = net.minecraft.world.entity.EntityType.PIG
+        val level = (plugin.server.worlds[0] as CraftWorld).handle
+        repeat(reservedEntityIds.size) { index ->
+            val entity = entityType.create(level)
+            reservedEntityIds[index] = entity?.id ?: -1
+        }
+        plugin.logger.info("Entity IDs set to: ${reservedEntityIds.contentToString()}")
     }
 }
