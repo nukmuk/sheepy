@@ -17,12 +17,13 @@ import org.bukkit.craftbukkit.entity.CraftPlayer
 import org.joml.Vector3f
 import java.util.UUID
 
-typealias EntityList = List<Int>
+typealias EntityList = MutableList<Int>
 
 object EntityRenderer {
 
     val reservedEntityIds = IntArray(16384)
-    private var entitiesAlive = 0
+
+    //    private var entitiesAlive = 0
     private var entitiesAliveWithAnimations = HashMap<Animation, EntityList>()
 
     fun playFramesWithBlockDisplays(frames: List<Frame>, maxParticles: Int, plugin: Sheepy) {
@@ -34,20 +35,19 @@ object EntityRenderer {
 
             frames.forEach { frame ->
 
-//        val total = frame.animationParticles.size
+                val total = frame.animationParticles.size
                 val particleScale = frame.animation.particleScale
 
-//        val divider: Int = if (maxParticles == 0) 0 else total / maxParticles
+                val divider: Int = if (maxParticles == 0) 0 else total / maxParticles
 
 //        val scaleMultiplier = 1 + Math.clamp(divider / 30.0f, 0.0f, 2.0f)
 
 
-                frame.animationParticles.forEach { point ->
+                frame.animationParticles.forEachIndexed { pointIndex, point ->
                     if (point == null) return
-//            if (divider != 0 && idx % divider != 0) return@forEachIndexed
+                    if (divider != 0 && pointIndex % divider != 0) return@forEachIndexed
 
-                    if (globalParticleIndex > maxParticles) return@forEach
-//                if (particleIndex > 1) return@forEachIndexed
+                    if (globalParticleIndex > maxParticles) return@forEachIndexed
 
 //                Utils.sendMessage(
 //                    player,
@@ -57,7 +57,7 @@ object EntityRenderer {
 
                     val block = ColorUtils.getBlockWithColor(point.color)
 
-                    if (globalParticleIndex > entitiesAlive) {
+                    if (globalParticleIndex > entitiesAliveWithAnimations.values.fold(0) { acc, list -> acc + list.size }) {
                         Utils.sendMessage(player, "Creating block index $globalParticleIndex")
                         connection.sendPacket(
                             ClientboundAddEntityPacket(
@@ -73,7 +73,9 @@ object EntityRenderer {
                                 0.0
                             )
                         )
-                        entitiesAlive++
+                        if (entitiesAliveWithAnimations[frame.animation] == null)
+                            entitiesAliveWithAnimations[frame.animation] = mutableListOf()
+                        entitiesAliveWithAnimations[frame.animation]?.add(globalParticleIndex)
                     }
 
                     val metasCreated = listOf(
@@ -104,8 +106,8 @@ object EntityRenderer {
                     globalParticleIndex++
                 }
             }
-            if (globalParticleIndex < entitiesAlive - 1) {
-                val aliveIndex = entitiesAlive - 1
+            if (globalParticleIndex < entitiesAliveWithAnimations.values.fold(0) { acc, list -> acc + list.size } - 1) {
+                val aliveIndex = entitiesAliveWithAnimations.values.fold(0) { acc, list -> acc + list.size } - 1
                 val correctIndex = globalParticleIndex
 
                 val idsToRemove = reservedEntityIds.slice(correctIndex + 1..aliveIndex)
@@ -131,12 +133,13 @@ object EntityRenderer {
             val connection = craftPlayer.handle.connection
             connection.send(ClientboundRemoveEntitiesPacket(*reservedEntityIds))
         }
-        entitiesAlive = 0
+        entitiesAliveWithAnimations.clear()
     }
 
     fun clean(plugin: Sheepy) {
-        if (entitiesAlive > 0) {
-            plugin.logger.info("Running EntityRenderer cleanup for $entitiesAlive entities")
+        val alive = entitiesAliveWithAnimations.values.fold(0) { acc, list -> acc + list.size }
+        if (alive > 0) {
+            plugin.logger.info("Running EntityRenderer cleanup for $alive entities")
             sendRemoveAllEntitiesPacket(plugin)
         }
     }
