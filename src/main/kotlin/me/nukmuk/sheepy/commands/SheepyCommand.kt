@@ -15,14 +15,14 @@ import me.nukmuk.sheepy.Config
 import me.nukmuk.sheepy.RenderType
 import me.nukmuk.sheepy.Sheepy
 import me.nukmuk.sheepy.Utils
-import org.bukkit.ChatColor
+import me.nukmuk.sheepy.frameRenderers.EntityRenderer
 import org.bukkit.FluidCollisionMode
 import org.bukkit.Location
 import org.bukkit.command.CommandSender
 import kotlin.Boolean
 import kotlin.math.roundToInt
 
-class SheepyCommand(plugin: Sheepy) {
+class SheepyCommand(private val plugin: Sheepy) {
 
     fun register() {
         commandAPICommand("sheepy") {
@@ -42,12 +42,13 @@ class SheepyCommand(plugin: Sheepy) {
             subcommand(rotation)
             subcommand(debug)
             subcommand(renderType)
+            subcommand(TestCommand(plugin).test)
         }
     }
 
     private val files = subcommand("files") {
         anyExecutor { sender, args ->
-            val files = Utils.getAnimsInFolder(plugin)
+            val files = AnimationsManager.getAnimsInFolder(plugin)
             Utils.sendMessage(
                 sender,
                 if (!files.isEmpty()) files.joinToString("<gray>, ${Config.PRIMARY_COLOR}") { file -> file.name } else "Folder empty")
@@ -60,21 +61,30 @@ class SheepyCommand(plugin: Sheepy) {
 
         stringArgument("fileName") {
             replaceSuggestions(
-                ArgumentSuggestions.strings { Utils.animsInFolder.map { it.nameWithoutExtension }.toTypedArray() }
+                ArgumentSuggestions.strings {
+                    AnimationsManager.animsInFolder.map { it.nameWithoutExtension }.toTypedArray()
+                }
             )
         }
-
         stringArgument("animationName", optional = true) {
             replaceSuggestions(ArgumentSuggestions.strings { info -> arrayOf(info.previousArgs()["fileName"].toString()) })
         }
         booleanArgument("repeat", optional = true)
-        floatArgument("scale", optional = true)
+        floatArgument("scale", optional = true) {
+            replaceSuggestions(ArgumentSuggestions.strings("1.0"))
+        }
+        multiLiteralArgument(
+            "renderType",
+            optional = true,
+            literals = RenderType.entries.map { it.toString() }.toTypedArray()
+        )
         playerExecutor { player, args ->
 
             val fileName = args["fileName"] as String
             var animationName = (args["animationName"] ?: fileName) as String
             val repeat = (args["repeat"] ?: false) as Boolean
             val scale = (args["scale"]) as? Float
+            val renderType = RenderType.entries.find { it.name == args["renderType"] }
 
             if (AnimationsManager.animationNames().contains(animationName)) {
                 Utils.sendMessage(
@@ -92,7 +102,7 @@ class SheepyCommand(plugin: Sheepy) {
             }
             val targetLocation = Location(player.world, targetPosition.x, targetPosition.y, targetPosition.z)
 
-            val files = Utils.getAnimsInFolder(plugin)
+            val files = AnimationsManager.getAnimsInFolder(plugin)
 
             val file = files.find { it.nameWithoutExtension == fileName }
 
@@ -117,6 +127,11 @@ class SheepyCommand(plugin: Sheepy) {
                 animation.animationScale = scale
                 animation.particleScale = scale
                 msg += "${Config.PRIMARY_COLOR}, scale ${Config.VAR_COLOR}$scale"
+            }
+
+            if (renderType != null) {
+                animation.renderType = renderType
+                msg += "${Config.PRIMARY_COLOR}, render type ${Config.VAR_COLOR}$renderType"
             }
 
             animation.start()
@@ -408,14 +423,6 @@ class SheepyCommand(plugin: Sheepy) {
                     "Current animation render type: ${Config.VAR_COLOR}${animation.renderType}"
                 )
                 return@anyExecutor
-            }
-
-            if (newRenderType == RenderType.BLOCK_DISPLAY) {
-                val value = AnimationsManager.reservedEntityIds[1]
-                Utils.sendMessage(sender, "Value is $value")
-                if (value == 0) {
-                    AnimationsManager.initializeEntityIds()
-                }
             }
 
             animation.renderType = newRenderType

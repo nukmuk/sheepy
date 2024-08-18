@@ -3,6 +3,7 @@ package me.nukmuk.sheepy
 import dev.jorel.commandapi.CommandAPI
 import dev.jorel.commandapi.CommandAPIBukkitConfig
 import me.nukmuk.sheepy.commands.SheepyCommand
+import me.nukmuk.sheepy.frameRenderers.EntityRenderer
 import org.bukkit.plugin.java.JavaPlugin
 
 
@@ -19,7 +20,8 @@ class Sheepy : JavaPlugin() {
 //        getCommand("misc")?.setExecutor(MiscCommand(this))
         AnimationsManager.initialize(this)
         SheepyCommand(this).register()
-        Utils.getAnimsInFolder(this)
+        AnimationsManager.getAnimsInFolder(this)
+        EntityRenderer.initializeEntityIds(this)
     }
 
     override fun onDisable() {

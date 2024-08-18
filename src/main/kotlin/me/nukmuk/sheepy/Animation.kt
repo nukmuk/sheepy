@@ -1,6 +1,7 @@
 package me.nukmuk.sheepy
 
 import it.unimi.dsi.fastutil.io.FastBufferedInputStream
+import me.nukmuk.sheepy.frameRenderers.EntityRenderer
 import org.bukkit.Color
 import org.bukkit.Location
 import org.bukkit.World

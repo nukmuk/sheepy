@@ -1,12 +1,14 @@
 package me.nukmuk.sheepy
 
+import me.nukmuk.sheepy.frameRenderers.EntityRenderer
+import me.nukmuk.sheepy.frameRenderers.ParticleRenderer
 import org.bukkit.Location
-import org.bukkit.craftbukkit.CraftWorld
 import org.bukkit.scheduler.BukkitRunnable
 import org.bukkit.scheduler.BukkitTask
 import org.joml.Vector3f
 import java.io.File
 import java.util.UUID
+import javax.swing.text.html.parser.Entity
 import kotlin.math.ceil
 
 object AnimationsManager {
@@ -14,9 +16,12 @@ object AnimationsManager {
     private lateinit var plugin: Sheepy
     private lateinit var task: BukkitTask
     val debugPlayers = HashSet<UUID>()
-    val reservedEntityIds = IntArray(16384)
 
     var maxParticlesPerTick = 2000
+
+    private var _animsInFolder = listOf<File>()
+    val animsInFolder: List<File>
+        get() = _animsInFolder
 
     fun animationNames(): Set<String> {
         return animations.keys
@@ -36,6 +41,9 @@ object AnimationsManager {
 
     fun clearAnimations() {
         animations.values.forEach { it.shouldBeDeleted = true }
+        plugin.server.scheduler.runTaskLater(plugin, Runnable {
+            EntityRenderer.sendRemoveAllEntitiesPacket(plugin)
+        }, 20)
     }
 
     fun initialize(plugin: Sheepy) {
@@ -48,7 +56,10 @@ object AnimationsManager {
                     sendDebugPlayersActionBar("${Config.ERROR_COLOR}previous frame not played yet, animations playing: ${animations.keys} i: $i")
                     return
                 }
-                if (animations.isEmpty()) return
+                if (animations.isEmpty()) {
+                    EntityRenderer.clean(plugin)
+                    return
+                }
                 processing = true
                 val framesToBePlayed = ArrayList<Frame>()
                 val animationIterator = animations.values.iterator()
@@ -81,16 +92,18 @@ object AnimationsManager {
                 }
                 val maxParticles: Int = ceil((maxParticlesPerTick.toDouble() / framesToBePlayed.size)).toInt()
 
-                framesToBePlayed.forEach { frame ->
-                    when (frame.animation.renderType) {
-                        RenderType.PARTICLE -> FrameRenderer.playFrameWithParticles(frame, maxParticles)
-                        RenderType.BLOCK_DISPLAY -> FrameRenderer.playFrameWithBlockDisplays(
-                            frame,
+                RenderType.entries.forEach { entry ->
+                    val framesOfThisType = framesToBePlayed.filter { it.animation.renderType == entry }
+                    when (entry) {
+                        RenderType.PARTICLE -> ParticleRenderer.playFrames(framesOfThisType, maxParticles)
+                        RenderType.BLOCK_DISPLAY -> EntityRenderer.playFramesWithBlockDisplays(
+                            framesOfThisType,
                             maxParticles,
                             plugin
                         )
                     }
                 }
+
                 i++
                 processing = false
             }
@@ -102,12 +115,23 @@ object AnimationsManager {
             .forEach { it.sendActionBar(Utils.mm.deserialize(message)) }
     }
 
-    fun initializeEntityIds() {
-        val entityType = net.minecraft.world.entity.EntityType.PIG
-        val level = (plugin.server.worlds[0] as CraftWorld).handle
-        repeat(reservedEntityIds.size) { index ->
-            val entity = entityType.create(level)
-            reservedEntityIds[index] = entity?.id ?: -1
+    fun getAnimsInFolder(plugin: Sheepy): List<File> {
+        val pluginFolder = plugin.dataFolder
+        val animFolder = File(pluginFolder, "")
+
+        val files = animFolder.listFiles()?.filter { file -> file.extension == Config.FILE_EXTENSION }
+
+        if (files != null) {
+            _animsInFolder = files
+        } else {
+            return listOf()
         }
+
+        return files.toList()
     }
+}
+
+enum class RenderType {
+    PARTICLE,
+    BLOCK_DISPLAY
 }

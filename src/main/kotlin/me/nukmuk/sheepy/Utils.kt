@@ -2,19 +2,14 @@ package me.nukmuk.sheepy
 
 import net.kyori.adventure.text.minimessage.MiniMessage
 import org.bukkit.command.CommandSender
-import java.io.File
 import kotlin.text.replace
 
 object Utils {
-    private var _animsInFolder = listOf<File>()
-    val animsInFolder: List<File>
-        get() = _animsInFolder
-
     val mm = MiniMessage.miniMessage()
 
-    fun sendMessage(sender: CommandSender, message: String) {
+    fun sendMessage(target: CommandSender, message: String) {
         val text = mm.deserialize("${Config.PLUGIN_PREFIX} <reset>$message")
-        sender.sendMessage(text)
+        target.sendMessage(text)
     }
 
     // from https://stackoverflow.com/a/6162687
@@ -43,21 +38,6 @@ object Utils {
             (hbits and 0x8000) shl 16 // sign  << ( 31 - 15 )
                     or ((exp or mant) shl 13)
         ) // value << ( 23 - 10 )
-    }
-
-    fun getAnimsInFolder(plugin: Sheepy): List<File> {
-        val pluginFolder = plugin.dataFolder
-        val animFolder = File(pluginFolder, "")
-
-        val files = animFolder.listFiles()?.filter { file -> file.extension == Config.FILE_EXTENSION }
-
-        if (files != null) {
-            _animsInFolder = files
-        } else {
-            return listOf()
-        }
-
-        return files.toList()
     }
 
     fun sanitizeString(s: String?): String? {
