@@ -2,15 +2,16 @@ package me.nukmuk.sheepy
 
 import net.minecraft.network.protocol.game.ClientboundAddEntityPacket
 import net.minecraft.network.protocol.game.ClientboundSetEntityDataPacket
-import net.minecraft.network.syncher.EntityDataSerializer
+import net.minecraft.network.syncher.EntityDataSerializers
 import net.minecraft.network.syncher.SynchedEntityData
 import net.minecraft.world.entity.EntityType
+import net.minecraft.world.level.block.Block
+import net.minecraft.world.level.block.Blocks
+import net.minecraft.world.level.block.state.BlockBehaviour
+import net.minecraft.world.level.block.state.BlockState
 import net.minecraft.world.phys.Vec3
-import org.bukkit.Bukkit
-import org.bukkit.Material
 import org.bukkit.Particle
 import org.bukkit.craftbukkit.entity.CraftPlayer
-import org.bukkit.entity.BlockDisplay
 import java.util.UUID
 
 enum class RenderType {
@@ -54,6 +55,7 @@ object FrameRenderer {
 
 //        val scaleMultiplier = 1 + Math.clamp(divider / 30.0f, 0.0f, 2.0f)
 
+
         plugin.server.onlinePlayers.forEachIndexed { playerIndex, player ->
             val craftPlayer = player as CraftPlayer
             val connection = craftPlayer.handle.connection
@@ -62,11 +64,13 @@ object FrameRenderer {
 //            if (divider != 0 && idx % divider != 0) return@forEachIndexed
 
                 if (particleIndex > maxParticles) return@forEachIndexed
+//                if (particleIndex > 1) return@forEachIndexed
 
 //                Utils.sendMessage(
 //                    player,
 //                    "Sending packet :) index: $particleIndex entityId: ${AnimationsManager.reservedEntityIds[particleIndex]}"
 //                )
+
 
                 connection.sendPacket(
                     ClientboundAddEntityPacket(
@@ -76,13 +80,30 @@ object FrameRenderer {
                         point.z.toDouble(),
                         0.0f,
                         0.0f,
-                        EntityType.PIG,
+                        EntityType.BLOCK_DISPLAY,
                         0,
                         zeroVec,
                         0.0
                     )
                 )
-//                connection.send(ClientboundSetEntityDataPacket(index, listOf(SynchedEntityData.DataValue(23, null, 1))))
+
+
+                val metasCreated = listOf(
+                    SynchedEntityData.DataValue(
+                        23,
+                        EntityDataSerializers.BLOCK_STATE,
+                        Blocks.DIAMOND_BLOCK.defaultBlockState()
+                    )
+                )
+
+
+                connection.send(
+                    ClientboundSetEntityDataPacket(
+                        AnimationsManager.reservedEntityIds[particleIndex],
+                        metasCreated
+                    )
+                )
+
             }
         }
     }

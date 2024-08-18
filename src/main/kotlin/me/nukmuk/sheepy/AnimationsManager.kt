@@ -109,6 +109,5 @@ object AnimationsManager {
             val entity = entityType.create(level)
             reservedEntityIds[index] = entity?.id ?: -1
         }
-        plugin.logger.info("Entity IDs set to: ${reservedEntityIds.contentToString()}")
     }
 }

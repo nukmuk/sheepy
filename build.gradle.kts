@@ -26,6 +26,7 @@ dependencies {
     paperweight.paperDevBundle("1.21.1-R0.1-SNAPSHOT")
     implementation("dev.jorel:commandapi-bukkit-shade-mojang-mapped:9.5.2")
     compileOnly("dev.jorel:commandapi-bukkit-kotlin:9.5.3")
+    implementation(kotlin("reflect"))
 }
 
 val targetJavaVersion = 21
@@ -48,7 +49,7 @@ tasks.processResources {
 
 tasks.withType<ShadowJar> {
     relocate("dev.jorel.commandapi", "$group.commandapi")
-    minimize()
+//    minimize()
     archiveFileName.set("sheepy.jar")
     destinationDirectory.set(file("F:/Servers/dev/plugins"))
 }
