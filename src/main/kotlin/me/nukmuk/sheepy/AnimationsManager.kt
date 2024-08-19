@@ -2,14 +2,12 @@ package me.nukmuk.sheepy
 
 import me.nukmuk.sheepy.frameRenderers.EntityRenderer
 import me.nukmuk.sheepy.frameRenderers.ParticleRenderer
-import org.bukkit.Bukkit
 import org.bukkit.Location
 import org.bukkit.scheduler.BukkitRunnable
 import org.bukkit.scheduler.BukkitTask
 import org.joml.Vector3f
 import java.io.File
 import java.util.UUID
-import javax.swing.text.html.parser.Entity
 import kotlin.math.ceil
 
 object AnimationsManager {
@@ -56,21 +54,19 @@ object AnimationsManager {
             var i = 0
             override fun run() {
                 if (processing) {
-                    sendDebugPlayersActionBar("${Config.ERROR_COLOR}previous frame not played yet, animations playing: ${animations.keys} i: $i")
+                    sendDebugPlayersActionBar("${Config.ERROR_COLOR}previous frame still processing, animations playing: ${animations.keys} i: $i")
                     return
                 }
-                if (animations.values.find { it.playing.get() } == null) {
-                    EntityRenderer.clean(plugin)
-                    processing = false
-                    return
-                }
+                if (animations.values.filter { it.renderType == RenderType.BLOCK_DISPLAY }
+                        .find { it.playing } == null) EntityRenderer.clean(plugin)
+                if (animations.isEmpty()) return
                 processing = true
                 val framesToBePlayed = ArrayList<Frame>()
                 val animationIterator = animations.values.iterator()
                 while (animationIterator.hasNext()) {
                     val animation = animationIterator.next()
                     if (animation.shouldBeDeleted) animationIterator.remove()
-                    if (!animation.playing.get()) continue
+                    if (!animation.playing) continue
                     val frame = animation.getNextFrame(
                         Vector3f(
                             animation.location.x.toFloat(),

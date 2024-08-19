@@ -1,6 +1,5 @@
 package me.nukmuk.sheepy.frameRenderers
 
-import me.nukmuk.sheepy.AnimationsManager
 import me.nukmuk.sheepy.ColorUtils
 import me.nukmuk.sheepy.Frame
 import me.nukmuk.sheepy.Sheepy
@@ -30,9 +29,10 @@ object EntityRenderer {
     private var animationsLastTick = 0
 
     fun playFramesWithBlockDisplays(frames: List<Frame>, maxParticles: Int, plugin: Sheepy) {
-        val maxParticlesPerTick = if (AnimationsManager.maxParticlesPerTick == 0) reservedEntityIds.size else min(
+        if (frames.isEmpty()) return
+        val maxParticlesPerTick = if (maxParticles == 0) reservedEntityIds.size else min(
             reservedEntityIds.size,
-            AnimationsManager.maxParticlesPerTick
+            maxParticles
         )
         val particlesAllocatedPerAnimation = maxParticlesPerTick / frames.size
 

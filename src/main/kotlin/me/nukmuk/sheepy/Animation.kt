@@ -27,7 +27,7 @@ class Animation(
 
     private var i = 0
 
-    var playing = AtomicBoolean(false)
+    var playing = false
 
 
     var particleScale = 1.0f
@@ -40,17 +40,17 @@ class Animation(
 
 
     fun start() {
-        playing.set(true)
+        playing = true
     }
 
     fun stop() {
         player?.let { Utils.sendMessage(it, "pausing animation $name") }
-        playing.set(false)
+        playing = false
     }
 
     fun remove() {
         player?.let { Utils.sendMessage(it, "removing animation $name") }
-        playing.set(false)
+        playing = false
         shouldBeDeleted = true
     }
 
@@ -105,7 +105,7 @@ class Animation(
                 )
             }
         } else {
-            playing.set(false)
+            playing = false
             player?.let { Utils.sendMessage(it, "buffer empty") }
             return null
         }
