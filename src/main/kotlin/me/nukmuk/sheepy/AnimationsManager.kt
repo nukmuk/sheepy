@@ -2,6 +2,7 @@ package me.nukmuk.sheepy
 
 import me.nukmuk.sheepy.frameRenderers.EntityRenderer
 import me.nukmuk.sheepy.frameRenderers.ParticleRenderer
+import org.bukkit.Bukkit
 import org.bukkit.Location
 import org.bukkit.scheduler.BukkitRunnable
 import org.bukkit.scheduler.BukkitTask
@@ -41,13 +42,15 @@ object AnimationsManager {
 
     fun clearAnimations() {
         animations.values.forEach { it.shouldBeDeleted = true }
-        plugin.server.scheduler.runTaskLater(plugin, Runnable {
-            EntityRenderer.sendRemoveAllEntitiesPacket(plugin)
-        }, 20)
+//        plugin.server.scheduler.runTaskLater(plugin, Runnable {
+//            Utils.sendDebugMessage("clearing animations...")
+//            EntityRenderer.sendRemoveAllEntitiesPacket(plugin)
+//        }, 20L)
     }
 
     fun initialize(plugin: Sheepy) {
         this.plugin = plugin
+        plugin.server.onlinePlayers.filter { it.isOp }.forEach { debugPlayers.add(it.uniqueId) }
         task = object : BukkitRunnable() {
             var processing = false
             var i = 0
@@ -56,8 +59,9 @@ object AnimationsManager {
                     sendDebugPlayersActionBar("${Config.ERROR_COLOR}previous frame not played yet, animations playing: ${animations.keys} i: $i")
                     return
                 }
-                if (animations.isEmpty()) {
+                if (animations.values.find { it.playing.get() } == null) {
                     EntityRenderer.clean(plugin)
+                    processing = false
                     return
                 }
                 processing = true

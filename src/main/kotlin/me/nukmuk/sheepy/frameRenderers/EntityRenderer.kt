@@ -1,6 +1,6 @@
 package me.nukmuk.sheepy.frameRenderers
 
-import me.nukmuk.sheepy.Animation
+import me.nukmuk.sheepy.AnimationsManager
 import me.nukmuk.sheepy.ColorUtils
 import me.nukmuk.sheepy.Frame
 import me.nukmuk.sheepy.Sheepy
@@ -16,38 +16,59 @@ import org.bukkit.craftbukkit.CraftWorld
 import org.bukkit.craftbukkit.entity.CraftPlayer
 import org.joml.Vector3f
 import java.util.UUID
-
-typealias EntityList = MutableList<Int>
+import kotlin.math.min
 
 object EntityRenderer {
 
+    // entity = particle = point
     val reservedEntityIds = IntArray(16384)
 
     //    private var entitiesAlive = 0
-    private var entitiesAliveWithAnimations = HashMap<Animation, EntityList>()
+    private var aliveEntityIndices = mutableSetOf<Int>() // index into reservedEntityIds
+
+    private var shouldUpdateEntities = false
+    private var animationsLastTick = 0
 
     fun playFramesWithBlockDisplays(frames: List<Frame>, maxParticles: Int, plugin: Sheepy) {
+        val maxParticlesPerTick = if (AnimationsManager.maxParticlesPerTick == 0) reservedEntityIds.size else min(
+            reservedEntityIds.size,
+            AnimationsManager.maxParticlesPerTick
+        )
+        val particlesAllocatedPerAnimation = maxParticlesPerTick / frames.size
+
+        if (animationsLastTick != frames.size) shouldUpdateEntities = true
+        if (shouldUpdateEntities)
+            clean(plugin)
+//        Utils.sendDebugMessage("aliveEntities: ${aliveEntityIndices.size}, shouldUpdateEntities: $shouldUpdateEntities, animationsLastTick: $animationsLastTick, frames: ${frames.size}")
         plugin.server.onlinePlayers.forEachIndexed { playerIndex, player ->
             val craftPlayer = player as CraftPlayer
             val connection = craftPlayer.handle.connection
 
-            var globalParticleIndex = 0
 
-            frames.forEach { frame ->
+            frames.forEachIndexed { frameIndex, frame ->
 
-                val total = frame.animationParticles.size
+//                val total = frame.animationParticles.size
                 val particleScale = frame.animation.particleScale
 
-                val divider: Int = if (maxParticles == 0) 0 else total / maxParticles
+                // 1 = (maxP / 3) * 0
+                // 2 = (maxP / 3) * 1
+                // 3 = (maxP / 3) * 2
+                val entitiesStartIndex = (maxParticlesPerTick / frames.size) * frameIndex
+
+                Utils.sendDebugMessage("particlesAllocated: $particlesAllocatedPerAnimation, entityStartIndex: $entitiesStartIndex, frameIndex: $frameIndex, name: ${frame.animation.name}")
+
+//                val divider: Int = if (maxParticles == 0) 0 else total / maxParticles
 
 //        val scaleMultiplier = 1 + Math.clamp(divider / 30.0f, 0.0f, 2.0f)
 
 
                 frame.animationParticles.forEachIndexed { pointIndex, point ->
-                    if (point == null) return
-                    if (divider != 0 && pointIndex % divider != 0) return@forEachIndexed
+                    if (point == null) return@forEachIndexed
+//                    if (divider != 0 && pointIndex % divider != 0) return@forEachIndexed
 
-                    if (globalParticleIndex > maxParticles) return@forEachIndexed
+                    if (pointIndex > particlesAllocatedPerAnimation) return@forEachIndexed
+
+                    val entityIndexInReservedArray = entitiesStartIndex + pointIndex
 
 //                Utils.sendMessage(
 //                    player,
@@ -57,11 +78,11 @@ object EntityRenderer {
 
                     val block = ColorUtils.getBlockWithColor(point.color)
 
-                    if (globalParticleIndex > entitiesAliveWithAnimations.values.fold(0) { acc, list -> acc + list.size }) {
-                        Utils.sendMessage(player, "Creating block index $globalParticleIndex")
+                    if (!aliveEntityIndices.contains(entityIndexInReservedArray)) {
+//                        Utils.sendMessage(player, "Creating block index $entityIndexInReservedArray")
                         connection.sendPacket(
                             ClientboundAddEntityPacket(
-                                reservedEntityIds[globalParticleIndex], UUID.randomUUID(),
+                                reservedEntityIds[entityIndexInReservedArray], UUID.randomUUID(),
                                 frame.animation.location.x,
                                 frame.animation.location.y,
                                 frame.animation.location.z,
@@ -73,9 +94,7 @@ object EntityRenderer {
                                 0.0
                             )
                         )
-                        if (entitiesAliveWithAnimations[frame.animation] == null)
-                            entitiesAliveWithAnimations[frame.animation] = mutableListOf()
-                        entitiesAliveWithAnimations[frame.animation]?.add(globalParticleIndex)
+                        aliveEntityIndices.add(entityIndexInReservedArray)
                     }
 
                     val metasCreated = listOf(
@@ -99,23 +118,16 @@ object EntityRenderer {
 
                     connection.send(
                         ClientboundSetEntityDataPacket(
-                            reservedEntityIds[globalParticleIndex],
+                            reservedEntityIds[entityIndexInReservedArray],
                             metasCreated
                         )
                     )
-                    globalParticleIndex++
                 }
             }
-            if (globalParticleIndex < entitiesAliveWithAnimations.values.fold(0) { acc, list -> acc + list.size } - 1) {
-                val aliveIndex = entitiesAliveWithAnimations.values.fold(0) { acc, list -> acc + list.size } - 1
-                val correctIndex = globalParticleIndex
 
-                val idsToRemove = reservedEntityIds.slice(correctIndex + 1..aliveIndex)
-//                Utils.sendMessage(player, "Removed $idsToRemove")
-                connection.send(ClientboundRemoveEntitiesPacket(*idsToRemove.toIntArray()))
-            }
         }
-
+        animationsLastTick = frames.size
+        shouldUpdateEntities = false
     }
 
     fun initializeEntityIds(plugin: Sheepy) {
@@ -131,15 +143,16 @@ object EntityRenderer {
         for (player in plugin.server.onlinePlayers) {
             val craftPlayer = player as CraftPlayer
             val connection = craftPlayer.handle.connection
-            connection.send(ClientboundRemoveEntitiesPacket(*reservedEntityIds))
+            connection.send(ClientboundRemoveEntitiesPacket(*aliveEntityIndices.map { reservedEntityIds[it] }
+                .toIntArray()))
         }
-        entitiesAliveWithAnimations.clear()
+        aliveEntityIndices.clear()
     }
 
     fun clean(plugin: Sheepy) {
-        val alive = entitiesAliveWithAnimations.values.fold(0) { acc, list -> acc + list.size }
-        if (alive > 0) {
-            plugin.logger.info("Running EntityRenderer cleanup for $alive entities")
+        val numberOfAliveEntities = aliveEntityIndices.size
+        if (numberOfAliveEntities > 0) {
+            plugin.logger.info("Running EntityRenderer cleanup for $numberOfAliveEntities entities")
             sendRemoveAllEntitiesPacket(plugin)
         }
     }

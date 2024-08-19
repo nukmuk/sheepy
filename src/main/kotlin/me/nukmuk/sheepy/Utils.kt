@@ -1,6 +1,7 @@
 package me.nukmuk.sheepy
 
 import net.kyori.adventure.text.minimessage.MiniMessage
+import org.bukkit.Bukkit
 import org.bukkit.command.CommandSender
 import kotlin.text.replace
 
@@ -10,6 +11,13 @@ object Utils {
     fun sendMessage(target: CommandSender, message: String) {
         val text = mm.deserialize("${Config.PLUGIN_PREFIX} <reset>$message")
         target.sendMessage(text)
+    }
+
+    fun sendDebugMessage(message: String) {
+        val text = mm.deserialize("${Config.PLUGIN_PREFIX} Debug: <reset>$message")
+        for (player in Bukkit.getServer().onlinePlayers)
+            if (AnimationsManager.debugPlayers.contains(player.uniqueId))
+                player.sendMessage(text)
     }
 
     // from https://stackoverflow.com/a/6162687
