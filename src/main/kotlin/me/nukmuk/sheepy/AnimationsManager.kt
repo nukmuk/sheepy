@@ -57,7 +57,7 @@ object AnimationsManager {
                     sendDebugPlayersActionBar("${Config.ERROR_COLOR}previous frame still processing, animations playing: ${animations.keys} i: $i")
                     return
                 }
-                if (animations.values.filter { it.renderType == RenderType.BLOCK_DISPLAY }
+                if (animations.values.filter { it.renderType != RenderType.PARTICLE }
                         .find { it.playing } == null) EntityRenderer.clean(plugin)
                 if (animations.isEmpty()) return
                 processing = true
@@ -96,7 +96,7 @@ object AnimationsManager {
                     val framesOfThisType = framesToBePlayed.filter { it.animation.renderType == entry }
                     when (entry) {
                         RenderType.PARTICLE -> ParticleRenderer.playFrames(framesOfThisType, maxParticles)
-                        RenderType.BLOCK_DISPLAY -> EntityRenderer.playFramesWithBlockDisplays(
+                        RenderType.BLOCK_DISPLAY, RenderType.TEXT_DISPLAY -> EntityRenderer.playFramesWithBlockDisplays(
                             framesOfThisType,
                             maxParticles,
                             plugin
@@ -133,5 +133,6 @@ object AnimationsManager {
 
 enum class RenderType {
     PARTICLE,
-    BLOCK_DISPLAY
+    BLOCK_DISPLAY,
+    TEXT_DISPLAY
 }

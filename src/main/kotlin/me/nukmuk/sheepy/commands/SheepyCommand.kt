@@ -15,6 +15,7 @@ import me.nukmuk.sheepy.Config
 import me.nukmuk.sheepy.RenderType
 import me.nukmuk.sheepy.Sheepy
 import me.nukmuk.sheepy.Utils
+import me.nukmuk.sheepy.renderers.EntityRenderer
 import org.bukkit.FluidCollisionMode
 import org.bukkit.Location
 import org.bukkit.command.CommandSender
@@ -434,6 +435,8 @@ class SheepyCommand(private val plugin: Sheepy) {
                 return@anyExecutor
             }
 
+            plugin.logger.info("Running EntityCleaner after rendertype changed")
+            EntityRenderer.clean(plugin)
             animation.renderType = newRenderType
             Utils.sendMessage(
                 sender,

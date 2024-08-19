@@ -2,17 +2,23 @@ package me.nukmuk.sheepy.renderers
 
 import me.nukmuk.sheepy.ColorUtils
 import me.nukmuk.sheepy.Frame
+import me.nukmuk.sheepy.RenderType
 import me.nukmuk.sheepy.Sheepy
 import me.nukmuk.sheepy.Utils
+import net.minecraft.nbt.CompoundTag
+import net.minecraft.network.chat.Component
 import net.minecraft.network.protocol.game.ClientboundAddEntityPacket
 import net.minecraft.network.protocol.game.ClientboundRemoveEntitiesPacket
 import net.minecraft.network.protocol.game.ClientboundSetEntityDataPacket
 import net.minecraft.network.syncher.EntityDataSerializers
 import net.minecraft.network.syncher.SynchedEntityData
 import net.minecraft.world.entity.EntityType
+import net.minecraft.world.level.block.Block
+import net.minecraft.world.level.block.Blocks
 import net.minecraft.world.phys.Vec3
 import org.bukkit.craftbukkit.CraftWorld
 import org.bukkit.craftbukkit.entity.CraftPlayer
+import org.bukkit.craftbukkit.util.CraftChatMessage
 import org.joml.Vector3f
 import java.util.UUID
 import kotlin.math.min
@@ -52,6 +58,8 @@ object EntityRenderer {
 
             frames.forEachIndexed { frameIndex, frame ->
 
+                val frameRenderType = frame.animation.renderType
+
 //                val total = frame.animationParticles.size
                 val particleScale = frame.animation.particleScale
 
@@ -81,10 +89,20 @@ object EntityRenderer {
 //                )
 
 
-                    val block = ColorUtils.getBlockWithColor(point.color)
+                    var block = Blocks.REDSTONE_TORCH
+
+                    if (frameRenderType == RenderType.BLOCK_DISPLAY)
+                        block = ColorUtils.getBlockWithColor(point.color)
 
                     if (!aliveEntityIndices.contains(entityIndexInReservedArray)) {
 //                        Utils.sendMessage(player, "Creating block index $entityIndexInReservedArray")
+
+                        val entityType = when (frameRenderType) {
+                            RenderType.TEXT_DISPLAY -> EntityType.TEXT_DISPLAY
+                            RenderType.BLOCK_DISPLAY -> EntityType.BLOCK_DISPLAY
+                            else -> throw Exception("Non entity type in EntityRenderer")
+                        }
+
                         connection.sendPacket(
                             ClientboundAddEntityPacket(
                                 reservedEntityIds[entityIndexInReservedArray], UUID.randomUUID(),
@@ -93,7 +111,7 @@ object EntityRenderer {
                                 frame.animation.location.z,
                                 0.0f,
                                 0.0f,
-                                EntityType.BLOCK_DISPLAY,
+                                entityType,
                                 0,
                                 zeroVec,
                                 0.0
@@ -103,12 +121,24 @@ object EntityRenderer {
                         playersWhoPacketsHaveBeenSentTo.add(player.uniqueId)
                     }
 
-                    val metasCreated = listOf(
-                        SynchedEntityData.DataValue(
+                    val entityInfo = when (frameRenderType) {
+                        RenderType.BLOCK_DISPLAY -> SynchedEntityData.DataValue(
                             23,
                             EntityDataSerializers.BLOCK_STATE,
                             block.defaultBlockState()
-                        ),
+                        )
+
+                        RenderType.TEXT_DISPLAY -> SynchedEntityData.DataValue(
+                            23,
+                            EntityDataSerializers.COMPONENT,
+                            CraftChatMessage.fromString("hello")[0]
+                        )
+
+                        else -> throw Exception("Non entity type in EntityRenderer")
+                    }
+
+                    val metasCreated = listOf(
+                        entityInfo,
                         SynchedEntityData.DataValue(
                             11,
                             EntityDataSerializers.VECTOR3,
