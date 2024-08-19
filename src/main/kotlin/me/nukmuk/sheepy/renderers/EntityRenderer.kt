@@ -1,4 +1,4 @@
-package me.nukmuk.sheepy.frameRenderers
+package me.nukmuk.sheepy.renderers
 
 import me.nukmuk.sheepy.ColorUtils
 import me.nukmuk.sheepy.Frame
@@ -27,6 +27,9 @@ object EntityRenderer {
 
     private var shouldUpdateEntities = false
     private var animationsLastTick = 0
+    private var maxParticlesLastTick: Int? = null
+
+    private val playersWhoPacketsHaveBeenSentTo = mutableListOf<UUID>()
 
     fun playFramesWithBlockDisplays(frames: List<Frame>, maxParticles: Int, plugin: Sheepy) {
         if (frames.isEmpty()) return
@@ -36,11 +39,13 @@ object EntityRenderer {
         )
         val particlesAllocatedPerAnimation = maxParticlesPerTick / frames.size
 
-        if (animationsLastTick != frames.size) shouldUpdateEntities = true
+        if (animationsLastTick != frames.size || maxParticlesLastTick != maxParticlesPerTick)
+            shouldUpdateEntities = true
+
         if (shouldUpdateEntities)
             clean(plugin)
 //        Utils.sendDebugMessage("aliveEntities: ${aliveEntityIndices.size}, shouldUpdateEntities: $shouldUpdateEntities, animationsLastTick: $animationsLastTick, frames: ${frames.size}")
-        plugin.server.onlinePlayers.forEachIndexed { playerIndex, player ->
+        plugin.server.onlinePlayers.forEach { player ->
             val craftPlayer = player as CraftPlayer
             val connection = craftPlayer.handle.connection
 
@@ -95,6 +100,7 @@ object EntityRenderer {
                             )
                         )
                         aliveEntityIndices.add(entityIndexInReservedArray)
+                        playersWhoPacketsHaveBeenSentTo.add(player.uniqueId)
                     }
 
                     val metasCreated = listOf(
@@ -127,6 +133,7 @@ object EntityRenderer {
 
         }
         animationsLastTick = frames.size
+        maxParticlesLastTick = maxParticlesPerTick
         shouldUpdateEntities = false
     }
 

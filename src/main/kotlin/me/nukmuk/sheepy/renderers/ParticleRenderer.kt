@@ -1,4 +1,4 @@
-package me.nukmuk.sheepy.frameRenderers
+package me.nukmuk.sheepy.renderers
 
 import me.nukmuk.sheepy.Frame
 import org.bukkit.Particle

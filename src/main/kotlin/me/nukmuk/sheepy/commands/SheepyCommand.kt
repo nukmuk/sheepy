@@ -15,7 +15,6 @@ import me.nukmuk.sheepy.Config
 import me.nukmuk.sheepy.RenderType
 import me.nukmuk.sheepy.Sheepy
 import me.nukmuk.sheepy.Utils
-import me.nukmuk.sheepy.frameRenderers.EntityRenderer
 import org.bukkit.FluidCollisionMode
 import org.bukkit.Location
 import org.bukkit.command.CommandSender

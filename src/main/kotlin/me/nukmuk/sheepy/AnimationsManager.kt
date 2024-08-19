@@ -1,7 +1,7 @@
 package me.nukmuk.sheepy
 
-import me.nukmuk.sheepy.frameRenderers.EntityRenderer
-import me.nukmuk.sheepy.frameRenderers.ParticleRenderer
+import me.nukmuk.sheepy.renderers.EntityRenderer
+import me.nukmuk.sheepy.renderers.ParticleRenderer
 import org.bukkit.Location
 import org.bukkit.scheduler.BukkitRunnable
 import org.bukkit.scheduler.BukkitTask
