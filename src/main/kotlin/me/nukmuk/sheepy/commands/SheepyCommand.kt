@@ -55,8 +55,7 @@ class SheepyCommand(private val plugin: Sheepy) {
     }
 
     private val create = subcommand("create") {
-        withAliases("c")
-        withAliases("st")
+        withAliases("c", "st")
 
         stringArgument("fileName") {
             replaceSuggestions(
@@ -213,23 +212,34 @@ class SheepyCommand(private val plugin: Sheepy) {
     }
 
     private val globalMaxParticlesPerTick = subcommand("globalmax") {
-        withAliases("gmax")
-        integerArgument("amount", optional = true)
+        withAliases("gmax", "max")
+        integerArgument("amount", optional = true, min = 0, max = 16384) {
+            replaceSuggestions(
+                ArgumentSuggestions.strings(
+                    AnimationsManager.maxParticlesPerTick.toString(),
+                )
+            )
+        }
         anyExecutor { sender, args ->
             val newMaxAmount = args["amount"] as? Int
+            val maxParticlesString =
+                { if (AnimationsManager.maxParticlesPerTick == 0) "UNLIMITED" else AnimationsManager.maxParticlesPerTick.toString() }
             if (newMaxAmount == null) {
                 Utils.sendMessage(
                     sender,
-                    "Current max particles per tick: ${Config.VAR_COLOR}${AnimationsManager.maxParticlesPerTick}"
+                    "Current max particles per tick: ${Config.VAR_COLOR}${maxParticlesString()}"
                 )
                 return@anyExecutor
             }
             AnimationsManager.maxParticlesPerTick = newMaxAmount.toInt()
+
+
             Utils.sendMessage(
                 sender,
-                "Set max particles per tick to ${Config.VAR_COLOR}${AnimationsManager.maxParticlesPerTick}"
+                "Set max particles per tick to ${Config.VAR_COLOR}${maxParticlesString()}"
             )
         }
+
     }
 
     private val particleScale = subcommand("particlescale") {
