@@ -1,20 +1,28 @@
 next:
-clean entity animations when changing gmax
-each animation/frame gets its own portion of the max entities, for example, 3 animations, each gets 1/3
-?make block display work with move packets, color is only set once per entity
+add back removing of extra entities?
+create separate text renderer that spawns the entities at right locations so that the billboard constraint can be set properly
+explore other text properties like bg and bg color
+custom text
+block and text scale
+different block palettes
 effects when walking inside animations
 config file to toggle particles "force" property, toggle with command too
 fix command aliases/usages (?)
 
--add debug list (only display action bar to these players), /sh debug to toggle
 add other particles, display entities
 maybe make format big endian instead
 add gzip compression
-- change cmd format similar to groupmanager, luckperms, decentholograms
-- add tab completion
 add config and save repeating animations
-- rotate animations
-- different methods of sending packets
 per player packets
-- implement animationscale
-- maybe add few frames buffer so gc doesn't cause lag
+
+done:
+-add debug list (only display action bar to these players), /sh debug to toggle
+-change cmd format similar to groupmanager, luckperms, decentholograms
+-add tab completion
+-rotate animations
+-different methods of sending packets
+-implement animationscale
+-maybe add few frames buffer so gc doesn't cause lag
+-clean entity animations when changing gmax
+-each animation/frame gets its own portion of the max entities, for example, 3 animations, each gets 1/3
+-make block display work with move packets, (color is only set once per entity?)

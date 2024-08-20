@@ -1,13 +1,14 @@
 package me.nukmuk.sheepy
 
-import me.nukmuk.sheepy.renderers.EntityRenderer
+import me.nukmuk.sheepy.renderers.BlockDisplayRenderer
+import me.nukmuk.sheepy.renderers.EntityHandler
 import me.nukmuk.sheepy.renderers.ParticleRenderer
 import org.bukkit.Location
 import org.bukkit.scheduler.BukkitRunnable
 import org.bukkit.scheduler.BukkitTask
 import org.joml.Vector3f
 import java.io.File
-import java.util.UUID
+import java.util.*
 import kotlin.math.ceil
 
 object AnimationsManager {
@@ -57,8 +58,9 @@ object AnimationsManager {
                     sendDebugPlayersActionBar("${Config.ERROR_COLOR}previous frame still processing, animations playing: ${animations.keys} i: $i")
                     return
                 }
-                if (animations.values.filter { it.renderType != RenderType.PARTICLE }
-                        .find { it.playing } == null) EntityRenderer.clean(plugin)
+                if (animations.values.filter { it.renderType != RenderType.PARTICLE }.find { it.playing } == null) {
+                    EntityHandler.cleanEntityRenderers(plugin)
+                }
                 if (animations.isEmpty()) return
                 processing = true
                 val framesToBePlayed = ArrayList<Frame>()
@@ -74,8 +76,8 @@ object AnimationsManager {
                         )
                     )
                     if (frame == null) {
-                        continue
                         plugin.logger.info("${animation.name} frame null after getNextFrame")
+                        continue
                     }
                     framesToBePlayed.add(frame)
                 }
@@ -96,7 +98,7 @@ object AnimationsManager {
                     val framesOfThisType = framesToBePlayed.filter { it.animation.renderType == entry }
                     when (entry) {
                         RenderType.PARTICLE -> ParticleRenderer.playFrames(framesOfThisType, maxParticles)
-                        RenderType.BLOCK_DISPLAY, RenderType.TEXT_DISPLAY -> EntityRenderer.playFramesWithBlockDisplays(
+                        RenderType.BLOCK_DISPLAY, RenderType.TEXT_DISPLAY -> BlockDisplayRenderer.entityHandler.playFrames(
                             framesOfThisType,
                             maxParticles,
                             plugin
@@ -129,6 +131,7 @@ object AnimationsManager {
 
         return files.toList()
     }
+
 }
 
 enum class RenderType {

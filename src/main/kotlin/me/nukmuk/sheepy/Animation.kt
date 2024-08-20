@@ -36,6 +36,7 @@ class Animation(
 
     var shouldBeDeleted = false
 
+    var textForTextRenderer = "  "
 
     fun start() {
         playing = true
@@ -76,7 +77,7 @@ class Animation(
         }
 
 
-        var frame: Frame
+        val frame: Frame
 
         if (reader.available() > 0) {
             val length = getShort().toInt()

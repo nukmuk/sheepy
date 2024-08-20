@@ -3,7 +3,7 @@ package me.nukmuk.sheepy
 import dev.jorel.commandapi.CommandAPI
 import dev.jorel.commandapi.CommandAPIBukkitConfig
 import me.nukmuk.sheepy.commands.SheepyCommand
-import me.nukmuk.sheepy.renderers.EntityRenderer
+import me.nukmuk.sheepy.renderers.EntityHandler
 import me.nukmuk.sheepy.listeners.PlayerListener
 import org.bukkit.plugin.java.JavaPlugin
 
@@ -22,7 +22,7 @@ class Sheepy : JavaPlugin() {
         AnimationsManager.initialize(this)
         SheepyCommand(this).register()
         AnimationsManager.getAnimsInFolder(this)
-        EntityRenderer.initializeEntityIds(this)
+        EntityHandler.initializeAllEntityRenderers(this)
         server.pluginManager.registerEvents(PlayerListener(this), this)
     }
 

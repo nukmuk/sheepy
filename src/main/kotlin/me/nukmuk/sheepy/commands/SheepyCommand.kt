@@ -1,25 +1,12 @@
 package me.nukmuk.sheepy.commands
 
 import dev.jorel.commandapi.arguments.ArgumentSuggestions
-import dev.jorel.commandapi.kotlindsl.anyExecutor
-import dev.jorel.commandapi.kotlindsl.booleanArgument
-import dev.jorel.commandapi.kotlindsl.commandAPICommand
-import dev.jorel.commandapi.kotlindsl.floatArgument
-import dev.jorel.commandapi.kotlindsl.integerArgument
-import dev.jorel.commandapi.kotlindsl.multiLiteralArgument
-import dev.jorel.commandapi.kotlindsl.playerExecutor
-import dev.jorel.commandapi.kotlindsl.stringArgument
-import dev.jorel.commandapi.kotlindsl.subcommand
-import me.nukmuk.sheepy.AnimationsManager
-import me.nukmuk.sheepy.Config
-import me.nukmuk.sheepy.RenderType
-import me.nukmuk.sheepy.Sheepy
-import me.nukmuk.sheepy.Utils
-import me.nukmuk.sheepy.renderers.EntityRenderer
+import dev.jorel.commandapi.kotlindsl.*
+import me.nukmuk.sheepy.*
+import me.nukmuk.sheepy.renderers.BlockDisplayRenderer
 import org.bukkit.FluidCollisionMode
 import org.bukkit.Location
 import org.bukkit.command.CommandSender
-import kotlin.Boolean
 import kotlin.math.roundToInt
 
 class SheepyCommand(private val plugin: Sheepy) {
@@ -80,7 +67,7 @@ class SheepyCommand(private val plugin: Sheepy) {
         playerExecutor { player, args ->
 
             val fileName = args["fileName"] as String
-            var animationName = (args["animationName"] ?: fileName) as String
+            val animationName = (args["animationName"] ?: fileName) as String
             val repeat = (args["repeat"] ?: false) as Boolean
             val scale = (args["scale"]) as? Float
             val renderType = RenderType.entries.find { it.name == args["renderType"] }
@@ -216,9 +203,9 @@ class SheepyCommand(private val plugin: Sheepy) {
         withAliases("gmax", "max")
         integerArgument("amount", optional = true, min = 0, max = 16384) {
             replaceSuggestions(
-                ArgumentSuggestions.strings(
-                    AnimationsManager.maxParticlesPerTick.toString(),
-                )
+                ArgumentSuggestions.strings {
+                    arrayOf(AnimationsManager.maxParticlesPerTick.toString())
+                }
             )
         }
         anyExecutor { sender, args ->
@@ -436,7 +423,7 @@ class SheepyCommand(private val plugin: Sheepy) {
             }
 
             plugin.logger.info("Running EntityCleaner after rendertype changed")
-            EntityRenderer.clean(plugin)
+            BlockDisplayRenderer.entityHandler.clean(plugin)
             animation.renderType = newRenderType
             Utils.sendMessage(
                 sender,
