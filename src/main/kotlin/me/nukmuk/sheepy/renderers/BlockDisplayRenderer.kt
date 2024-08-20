@@ -1,7 +1,7 @@
 package me.nukmuk.sheepy.renderers
 
 import me.nukmuk.sheepy.AnimationParticle
-import me.nukmuk.sheepy.ColorUtils
+import me.nukmuk.sheepy.utils.ColorUtil
 import me.nukmuk.sheepy.Frame
 import me.nukmuk.sheepy.RenderType
 import net.minecraft.network.chat.Component
@@ -16,7 +16,7 @@ import org.bukkit.craftbukkit.entity.CraftPlayer
 import org.joml.Vector3f
 import java.util.*
 
-object BlockDisplayRenderer : EntityRenderer {
+object BlockDisplayRenderer : IEntityRenderer {
 
     override val entityHandler = EntityHandler(this)
 
@@ -31,7 +31,7 @@ object BlockDisplayRenderer : EntityRenderer {
         var block = Blocks.REDSTONE_TORCH
 
         if (frameRenderType == RenderType.BLOCK_DISPLAY)
-            block = ColorUtils.getBlockWithColor(point.color)
+            block = ColorUtil.getBlockWithColor(point.color)
 
         if (!entityHandler.aliveEntityIndices.contains(entityIndexInReservedArray)) {
             //                        Utils.sendMessage(player, "Creating block index $entityIndexInReservedArray")
@@ -52,7 +52,7 @@ object BlockDisplayRenderer : EntityRenderer {
                     0.0f,
                     entityType,
                     0,
-                    zeroVec,
+                    EntityHandler.zeroVec,
                     0.0
                 )
             )

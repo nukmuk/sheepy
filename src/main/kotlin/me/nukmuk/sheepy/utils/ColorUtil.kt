@@ -1,5 +1,6 @@
-package me.nukmuk.sheepy
+package me.nukmuk.sheepy.utils
 
+import me.nukmuk.sheepy.Sheepy
 import net.minecraft.core.registries.BuiltInRegistries
 import net.minecraft.resources.ResourceLocation
 import net.minecraft.world.level.block.Block
@@ -10,7 +11,7 @@ import org.bukkit.Material
 import org.bukkit.craftbukkit.util.CraftMagicNumbers
 import kotlin.math.sqrt
 
-object ColorUtils {
+object ColorUtil {
     data class ColorBlock(val block: Block, val color: Color)
 
     val uniqueBlockColors: List<ColorBlock> by lazy { generateUniqueBlockColors() }

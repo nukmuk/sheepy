@@ -1,6 +1,7 @@
 package me.nukmuk.sheepy
 
 import it.unimi.dsi.fastutil.io.FastBufferedInputStream
+import me.nukmuk.sheepy.utils.Utils
 import org.bukkit.Color
 import org.bukkit.Location
 import org.bukkit.World
@@ -126,16 +127,4 @@ class Animation(
     private fun getInt(): Int {
         return ByteBuffer.wrap(reader.readNBytes(4)).order(ByteOrder.LITTLE_ENDIAN).getInt()
     }
-}
-
-data class Frame(val animationParticles: Array<AnimationParticle?>, val animation: Animation)
-
-data class AnimationParticle(
-    val x: Float,
-    val y: Float,
-    val z: Float,
-    val color: Color
-) {
-    val scale: Byte
-        get() = color.alpha.toByte()
 }

@@ -3,6 +3,7 @@ package me.nukmuk.sheepy
 import me.nukmuk.sheepy.renderers.BlockDisplayRenderer
 import me.nukmuk.sheepy.renderers.EntityHandler
 import me.nukmuk.sheepy.renderers.ParticleRenderer
+import me.nukmuk.sheepy.utils.Utils
 import org.bukkit.Location
 import org.bukkit.scheduler.BukkitRunnable
 import org.bukkit.scheduler.BukkitTask
@@ -131,11 +132,4 @@ object AnimationsManager {
 
         return files.toList()
     }
-
-}
-
-enum class RenderType {
-    PARTICLE,
-    BLOCK_DISPLAY,
-    TEXT_DISPLAY
 }

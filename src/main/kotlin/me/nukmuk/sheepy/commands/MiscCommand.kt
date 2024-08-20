@@ -2,7 +2,7 @@ package me.nukmuk.sheepy.commands
 
 import me.nukmuk.sheepy.Config
 import me.nukmuk.sheepy.Sheepy
-import me.nukmuk.sheepy.Utils
+import me.nukmuk.sheepy.utils.Utils
 import net.minecraft.network.chat.Component
 import net.minecraft.network.protocol.game.ClientboundAddEntityPacket
 import net.minecraft.network.protocol.game.ClientboundAnimatePacket
@@ -51,7 +51,7 @@ class MiscCommand(private val plugin: Sheepy) : CommandExecutor {
 //                if (otherPlayer == player) continue
                     val otherCraftPlayer = (otherPlayer as CraftPlayer)
                     val connection = otherCraftPlayer.handle.connection
-                    player as CraftPlayer
+                    player
                     val value = if (i % 2 == 0) 4 else 5
                     repeat(1000) {
                         connection.send(ClientboundAnimatePacket(player.handle, value))

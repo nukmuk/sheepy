@@ -1,8 +1,8 @@
 package me.nukmuk.sheepy.renderers
 
 import me.nukmuk.sheepy.*
+import me.nukmuk.sheepy.utils.Utils
 import net.minecraft.network.protocol.game.ClientboundRemoveEntitiesPacket
-import net.minecraft.server.network.ServerGamePacketListenerImpl
 import net.minecraft.world.entity.EntityType
 import net.minecraft.world.phys.Vec3
 import org.bukkit.craftbukkit.CraftWorld
@@ -10,20 +10,7 @@ import org.bukkit.craftbukkit.entity.CraftPlayer
 import java.util.*
 import kotlin.math.min
 
-interface EntityRenderer {
-    fun render(
-        frameRenderType: RenderType,
-        point: AnimationParticle,
-        entityIndexInReservedArray: Int,
-        connection: ServerGamePacketListenerImpl,
-        frame: Frame,
-        player: CraftPlayer,
-    )
-
-    val entityHandler: EntityHandler
-}
-
-class EntityHandler(private val renderer: EntityRenderer) {
+class EntityHandler(private val renderer: IEntityRenderer) {
 
     // entity = particle = point
     val reservedEntityIds = IntArray(16384)
@@ -120,6 +107,7 @@ class EntityHandler(private val renderer: EntityRenderer) {
     }
 
     companion object {
+        val zeroVec = Vec3(0.0, 0.0, 0.0)
         private val entityRenderers = arrayListOf(BlockDisplayRenderer) // must be manually updated 🙄
 
         fun cleanEntityRenderers(plugin: Sheepy) {
@@ -136,5 +124,3 @@ class EntityHandler(private val renderer: EntityRenderer) {
         }
     }
 }
-
-val zeroVec = Vec3(0.0, 0.0, 0.0)

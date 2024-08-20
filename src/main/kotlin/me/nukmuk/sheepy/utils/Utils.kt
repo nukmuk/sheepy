@@ -1,5 +1,7 @@
-package me.nukmuk.sheepy
+package me.nukmuk.sheepy.utils
 
+import me.nukmuk.sheepy.AnimationsManager
+import me.nukmuk.sheepy.Config
 import net.kyori.adventure.text.minimessage.MiniMessage
 import org.bukkit.Bukkit
 import org.bukkit.command.CommandSender
