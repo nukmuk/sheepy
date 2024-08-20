@@ -1,17 +1,14 @@
 package me.nukmuk.sheepy.renderers
 
 import me.nukmuk.sheepy.AnimationParticle
-import me.nukmuk.sheepy.utils.ColorUtil
 import me.nukmuk.sheepy.Frame
-import me.nukmuk.sheepy.RenderType
-import net.minecraft.network.chat.Component
+import me.nukmuk.sheepy.utils.ColorUtil
 import net.minecraft.network.protocol.game.ClientboundAddEntityPacket
 import net.minecraft.network.protocol.game.ClientboundSetEntityDataPacket
 import net.minecraft.network.syncher.EntityDataSerializers
 import net.minecraft.network.syncher.SynchedEntityData
 import net.minecraft.server.network.ServerGamePacketListenerImpl
 import net.minecraft.world.entity.EntityType
-import net.minecraft.world.level.block.Blocks
 import org.bukkit.craftbukkit.entity.CraftPlayer
 import org.joml.Vector3f
 import java.util.*
@@ -21,27 +18,17 @@ object BlockDisplayRenderer : IEntityRenderer {
     override val entityHandler = EntityHandler(this)
 
     override fun render(
-        frameRenderType: RenderType,
         point: AnimationParticle,
         entityIndexInReservedArray: Int,
         connection: ServerGamePacketListenerImpl,
         frame: Frame,
         player: CraftPlayer,
+        maxParticles: Int
     ) {
-        var block = Blocks.REDSTONE_TORCH
-
-        if (frameRenderType == RenderType.BLOCK_DISPLAY)
-            block = ColorUtil.getBlockWithColor(point.color)
+        val block = ColorUtil.getBlockWithColor(point.color)
 
         if (!entityHandler.aliveEntityIndices.contains(entityIndexInReservedArray)) {
-            //                        Utils.sendMessage(player, "Creating block index $entityIndexInReservedArray")
-
-            val entityType = when (frameRenderType) {
-                RenderType.TEXT_DISPLAY -> EntityType.TEXT_DISPLAY
-                RenderType.BLOCK_DISPLAY -> EntityType.BLOCK_DISPLAY
-                else -> throw Exception("Non entity type in EntityRenderer")
-            }
-
+            // on spawn
             connection.send(
                 ClientboundAddEntityPacket(
                     entityHandler.reservedEntityIds[entityIndexInReservedArray], UUID.randomUUID(),
@@ -50,68 +37,46 @@ object BlockDisplayRenderer : IEntityRenderer {
                     frame.animation.location.z,
                     0.0f,
                     0.0f,
-                    entityType,
+                    EntityType.BLOCK_DISPLAY,
                     0,
                     EntityHandler.zeroVec,
                     0.0
                 )
             )
 
-            if (frameRenderType == RenderType.TEXT_DISPLAY) {
-                connection.send(
-                    ClientboundSetEntityDataPacket(
-                        entityHandler.reservedEntityIds[entityIndexInReservedArray],
-                        listOf(
-                            SynchedEntityData.DataValue(
-                                8,
-                                EntityDataSerializers.INT,
-                                10
-                            ),
-                            SynchedEntityData.DataValue(
-                                9,
-                                EntityDataSerializers.INT,
-                                1
-                            ),
-                            SynchedEntityData.DataValue(
-                                15,
-                                EntityDataSerializers.BYTE,
-                                0
-                            ),
-                            SynchedEntityData.DataValue(
-                                23,
-                                EntityDataSerializers.COMPONENT,
-                                Component.literal(frame.animation.textForTextRenderer)
-                                //                                                .withColor(point.color.asRGB())
-                            ),
-                        )
-                    )
-                )
-            }
-
             entityHandler.aliveEntityIndices.add(entityIndexInReservedArray)
             entityHandler.playersWhoPacketsHaveBeenSentTo.add(player.uniqueId)
+
+            connection.send(
+                ClientboundSetEntityDataPacket(
+                    entityHandler.reservedEntityIds[entityIndexInReservedArray],
+                    listOf(
+                        SynchedEntityData.DataValue(
+                            17, // View range
+                            EntityDataSerializers.FLOAT,
+                            100f
+                        ),
+                    )
+
+                )
+            )
         }
 
-        val entityInfo = when (frameRenderType) {
-            RenderType.BLOCK_DISPLAY -> SynchedEntityData.DataValue(
-                23,
+        val divider: Int = if (maxParticles == 0) 0 else frame.animationParticles.size / maxParticles
+
+        val scaleMultiplier = 1 + Math.clamp(divider / 30.0f, 0.0f, 2.0f)
+        val makeBlocksApproxParticleSizedConstant = 0.005f
+        val blockScale =
+            frame.animation.particleScale * point.scale.toFloat() * makeBlocksApproxParticleSizedConstant * scaleMultiplier
+
+        val metas = listOf(
+            SynchedEntityData.DataValue(
+                23, // Displayed block state
                 EntityDataSerializers.BLOCK_STATE,
                 block.defaultBlockState()
-            )
-
-            RenderType.TEXT_DISPLAY -> SynchedEntityData.DataValue(
-                25,
-                EntityDataSerializers.INT,
-                point.color.setAlpha(255).asARGB()
-            )
-
-            else -> null
-        }
-
-        val metasCreated = listOf(
-            entityInfo,
+            ),
             SynchedEntityData.DataValue(
-                11,
+                11, // Translation
                 EntityDataSerializers.VECTOR3,
                 Vector3f(
                     (point.x - frame.animation.location.x).toFloat(),
@@ -119,13 +84,21 @@ object BlockDisplayRenderer : IEntityRenderer {
                     (point.z - frame.animation.location.z).toFloat()
                 )
             ),
-
+            SynchedEntityData.DataValue(
+                12, // Scale
+                EntityDataSerializers.VECTOR3,
+                Vector3f(
+                    blockScale,
+                    blockScale,
+                    blockScale,
+                )
             )
+        )
 
         connection.send(
             ClientboundSetEntityDataPacket(
                 entityHandler.reservedEntityIds[entityIndexInReservedArray],
-                metasCreated
+                metas
             )
         )
     }

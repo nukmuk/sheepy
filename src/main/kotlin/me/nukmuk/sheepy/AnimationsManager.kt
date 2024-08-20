@@ -3,6 +3,7 @@ package me.nukmuk.sheepy
 import me.nukmuk.sheepy.renderers.BlockDisplayRenderer
 import me.nukmuk.sheepy.renderers.EntityHandler
 import me.nukmuk.sheepy.renderers.ParticleRenderer
+import me.nukmuk.sheepy.renderers.TextDisplayRenderer
 import me.nukmuk.sheepy.utils.Utils
 import org.bukkit.Location
 import org.bukkit.scheduler.BukkitRunnable
@@ -95,11 +96,17 @@ object AnimationsManager {
                 }
                 val maxParticles: Int = ceil((maxParticlesPerTick.toDouble() / framesToBePlayed.size)).toInt()
 
-                RenderType.entries.forEach { entry ->
-                    val framesOfThisType = framesToBePlayed.filter { it.animation.renderType == entry }
-                    when (entry) {
+                RenderType.entries.forEach { type ->
+                    val framesOfThisType = framesToBePlayed.filter { it.animation.renderType == type }
+                    when (type) {
                         RenderType.PARTICLE -> ParticleRenderer.playFrames(framesOfThisType, maxParticles)
-                        RenderType.BLOCK_DISPLAY, RenderType.TEXT_DISPLAY -> BlockDisplayRenderer.entityHandler.playFrames(
+                        RenderType.BLOCK_DISPLAY -> BlockDisplayRenderer.playFrames(
+                            framesOfThisType,
+                            maxParticles,
+                            plugin
+                        )
+
+                        RenderType.TEXT_DISPLAY -> TextDisplayRenderer.playFrames(
                             framesOfThisType,
                             maxParticles,
                             plugin

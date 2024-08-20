@@ -44,10 +44,6 @@ class EntityHandler(private val renderer: IEntityRenderer) {
 
             frames.forEachIndexed { frameIndex, frame ->
 
-                val frameRenderType = frame.animation.renderType
-
-                val particleScale = frame.animation.particleScale
-
                 val entitiesStartIndex = (maxParticlesPerTick / frames.size) * frameIndex
 
                 Utils.sendDebugMessage("particlesAllocated: $particlesAllocatedPerAnimation, entityStartIndex: $entitiesStartIndex, frameIndex: $frameIndex, name: ${frame.animation.name}")
@@ -62,12 +58,12 @@ class EntityHandler(private val renderer: IEntityRenderer) {
                     val entityIndexInReservedArray = entitiesStartIndex + pointIndex
 
                     renderer.render(
-                        frameRenderType,
                         point,
                         entityIndexInReservedArray,
                         connection,
                         frame,
                         player,
+                        maxParticles
                     )
                 }
             }
@@ -79,16 +75,17 @@ class EntityHandler(private val renderer: IEntityRenderer) {
     }
 
 
-    fun initializeEntityIds(plugin: Sheepy) {
+    private fun initializeEntityIds(plugin: Sheepy) {
         val entityType = EntityType.PIG
         val level = (plugin.server.worlds[0] as CraftWorld).handle
         repeat(reservedEntityIds.size) { index ->
             val entity = entityType.create(level)
             reservedEntityIds[index] = entity?.id ?: -1
         }
+        
     }
 
-    fun sendRemoveAllEntitiesPacket(plugin: Sheepy) {
+    private fun sendRemoveAllEntitiesPacket(plugin: Sheepy) {
         for (player in plugin.server.onlinePlayers) {
             val craftPlayer = player as CraftPlayer
             val connection = craftPlayer.handle.connection
@@ -98,7 +95,7 @@ class EntityHandler(private val renderer: IEntityRenderer) {
         aliveEntityIndices.clear()
     }
 
-    fun clean(plugin: Sheepy) {
+    private fun clean(plugin: Sheepy) {
         val numberOfAliveEntities = aliveEntityIndices.size
         if (numberOfAliveEntities > 0) {
             plugin.logger.info("Running EntityRenderer cleanup for $numberOfAliveEntities entities")
@@ -108,10 +105,11 @@ class EntityHandler(private val renderer: IEntityRenderer) {
 
     companion object {
         val zeroVec = Vec3(0.0, 0.0, 0.0)
-        private val entityRenderers = arrayListOf(BlockDisplayRenderer) // must be manually updated 🙄
+
+        // must be manually updated 🙄
+        private val entityRenderers = arrayListOf(BlockDisplayRenderer, TextDisplayRenderer)
 
         fun cleanEntityRenderers(plugin: Sheepy) {
-            Utils.sendDebugMessage("Cleaning all ${entityRenderers.size} entity renderers: $entityRenderers")
             entityRenderers.forEach {
                 it.entityHandler.clean(plugin)
             }

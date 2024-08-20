@@ -4,6 +4,7 @@ import dev.jorel.commandapi.arguments.ArgumentSuggestions
 import dev.jorel.commandapi.kotlindsl.*
 import me.nukmuk.sheepy.*
 import me.nukmuk.sheepy.renderers.BlockDisplayRenderer
+import me.nukmuk.sheepy.renderers.EntityHandler
 import me.nukmuk.sheepy.utils.Utils
 import org.bukkit.FluidCollisionMode
 import org.bukkit.Location
@@ -47,11 +48,9 @@ class SheepyCommand(private val plugin: Sheepy) {
         withAliases("c", "st")
 
         stringArgument("fileName") {
-            replaceSuggestions(
-                ArgumentSuggestions.strings {
-                    AnimationsManager.animsInFolder.map { it.nameWithoutExtension }.toTypedArray()
-                }
-            )
+            replaceSuggestions(ArgumentSuggestions.strings {
+                AnimationsManager.animsInFolder.map { it.nameWithoutExtension }.toTypedArray()
+            })
         }
         stringArgument("animationName", optional = true) {
             replaceSuggestions(ArgumentSuggestions.strings { info -> arrayOf(info.previousArgs()["fileName"].toString()) })
@@ -61,9 +60,7 @@ class SheepyCommand(private val plugin: Sheepy) {
             replaceSuggestions(ArgumentSuggestions.strings("1.0"))
         }
         multiLiteralArgument(
-            "renderType",
-            optional = true,
-            literals = RenderType.entries.map { it.toString() }.toTypedArray()
+            "renderType", optional = true, literals = RenderType.entries.map { it.toString() }.toTypedArray()
         )
         playerExecutor { player, args ->
 
@@ -203,11 +200,9 @@ class SheepyCommand(private val plugin: Sheepy) {
     private val globalMaxParticlesPerTick = subcommand("globalmax") {
         withAliases("gmax", "max")
         integerArgument("amount", optional = true, min = 0, max = 16384) {
-            replaceSuggestions(
-                ArgumentSuggestions.strings {
-                    arrayOf(AnimationsManager.maxParticlesPerTick.toString())
-                }
-            )
+            replaceSuggestions(ArgumentSuggestions.strings {
+                arrayOf(AnimationsManager.maxParticlesPerTick.toString())
+            })
         }
         anyExecutor { sender, args ->
             val newMaxAmount = args["amount"] as? Int
@@ -215,8 +210,7 @@ class SheepyCommand(private val plugin: Sheepy) {
                 { if (AnimationsManager.maxParticlesPerTick == 0) "UNLIMITED" else AnimationsManager.maxParticlesPerTick.toString() }
             if (newMaxAmount == null) {
                 Utils.sendMessage(
-                    sender,
-                    "Current max particles per tick: ${Config.VAR_COLOR}${maxParticlesString()}"
+                    sender, "Current max particles per tick: ${Config.VAR_COLOR}${maxParticlesString()}"
                 )
                 return@anyExecutor
             }
@@ -224,8 +218,7 @@ class SheepyCommand(private val plugin: Sheepy) {
 
 
             Utils.sendMessage(
-                sender,
-                "Set max particles per tick to ${Config.VAR_COLOR}${maxParticlesString()}"
+                sender, "Set max particles per tick to ${Config.VAR_COLOR}${maxParticlesString()}"
             )
         }
 
@@ -256,8 +249,7 @@ class SheepyCommand(private val plugin: Sheepy) {
 
             if (newParticleScale == null) {
                 Utils.sendMessage(
-                    sender,
-                    "Current particle scale: ${Config.VAR_COLOR}${animation.particleScale}"
+                    sender, "Current particle scale: ${Config.VAR_COLOR}${animation.particleScale}"
                 )
                 return@anyExecutor
             }
@@ -294,8 +286,7 @@ class SheepyCommand(private val plugin: Sheepy) {
 
             if (newAnimationScale == null) {
                 Utils.sendMessage(
-                    sender,
-                    "Current animation scale: ${Config.VAR_COLOR}${animation.animationScale}"
+                    sender, "Current animation scale: ${Config.VAR_COLOR}${animation.animationScale}"
                 )
                 return@anyExecutor
             }
@@ -399,9 +390,7 @@ class SheepyCommand(private val plugin: Sheepy) {
             replaceSuggestions(currentAnimationsSuggestion())
         }
         multiLiteralArgument(
-            "renderType",
-            optional = true,
-            literals = RenderType.entries.map { it.toString() }.toTypedArray()
+            "renderType", optional = true, literals = RenderType.entries.map { it.toString() }.toTypedArray()
         )
         anyExecutor { sender, args ->
             val animationName = args["animationName"] as String
@@ -417,14 +406,15 @@ class SheepyCommand(private val plugin: Sheepy) {
 
             if (newRenderType == null) {
                 Utils.sendMessage(
-                    sender,
-                    "Current animation render type: ${Config.VAR_COLOR}${animation.renderType}"
+                    sender, "Current animation render type: ${Config.VAR_COLOR}${animation.renderType}"
                 )
                 return@anyExecutor
             }
 
+            animation.renderType = null
+
             plugin.logger.info("Running EntityCleaner after rendertype changed")
-            BlockDisplayRenderer.entityHandler.clean(plugin)
+            EntityHandler.cleanEntityRenderers(plugin)
             animation.renderType = newRenderType
             Utils.sendMessage(
                 sender,

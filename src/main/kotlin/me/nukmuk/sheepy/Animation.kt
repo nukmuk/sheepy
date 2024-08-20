@@ -2,6 +2,7 @@ package me.nukmuk.sheepy
 
 import it.unimi.dsi.fastutil.io.FastBufferedInputStream
 import me.nukmuk.sheepy.utils.Utils
+import org.bukkit.Bukkit
 import org.bukkit.Color
 import org.bukkit.Location
 import org.bukkit.World
@@ -33,7 +34,7 @@ class Animation(
     var animationScale = 1.0f
     var animationRotation = 0.0f
     var repeat = false
-    var renderType = RenderType.PARTICLE
+    var renderType: RenderType? = RenderType.PARTICLE
 
     var shouldBeDeleted = false
 
@@ -62,17 +63,18 @@ class Animation(
         reader.position(0)
     }
 
-    fun animationIsOnLastFrame(): Boolean {
+    fun readerIsAtFileEnd(): Boolean {
         return reader.position() >= reader.length()
     }
 
     fun getNextFrame(worldLocationOffset: Vector3f): Frame? {
 
-        if (animationIsOnLastFrame()) {
+        if (readerIsAtFileEnd()) {
             if (repeat) {
                 seekToStart()
             } else {
                 remove()
+                Bukkit.getLogger().info("Animation $name ended, returning null as frame")
                 return null
             }
         }
@@ -80,7 +82,7 @@ class Animation(
 
         val frame: Frame
 
-        if (reader.available() > 0) {
+        if (reader.available() >= 4) {
             val length = getShort().toInt()
 
             frame = Frame(
@@ -106,7 +108,7 @@ class Animation(
             }
         } else {
             playing = false
-            player?.let { Utils.sendMessage(it, "buffer empty") }
+            Utils.sendDebugMessage("Animation $name buffer empty")
             return null
         }
 
