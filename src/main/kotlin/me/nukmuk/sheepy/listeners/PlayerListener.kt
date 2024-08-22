@@ -1,7 +1,7 @@
 package me.nukmuk.sheepy.listeners
 
 import me.nukmuk.sheepy.Sheepy
-import me.nukmuk.sheepy.renderers.packet.EntityHandler
+import me.nukmuk.sheepy.renderers.packet.PacketEntityHandler
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.event.player.PlayerChangedWorldEvent
@@ -11,12 +11,12 @@ class PlayerListener(private val plugin: Sheepy) : Listener {
     @EventHandler
     fun onPlayerJoin(event: PlayerJoinEvent) {
         plugin.logger.info("Running EntityRenderer cleanup on player join")
-        EntityHandler.cleanEntityRenderers(plugin)
+        PacketEntityHandler.cleanEntityRenderers(plugin)
     }
 
     @EventHandler
     fun onPlayerChangedWorld(event: PlayerChangedWorldEvent) {
         plugin.logger.info("Running EntityRenderer cleanup on player world changed")
-        EntityHandler.cleanEntityRenderers(plugin)
+        PacketEntityHandler.cleanEntityRenderers(plugin)
     }
 }

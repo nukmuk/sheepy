@@ -9,7 +9,7 @@ import org.bukkit.craftbukkit.entity.CraftPlayer
 import java.util.*
 import kotlin.math.min
 
-class EntityHandler(private val renderer: IEntityRenderer) {
+class PacketEntityHandler(private val renderer: IEntityRenderer) {
 
     // entity = particle = point
     val reservedEntityIds = IntArray(16384)
@@ -110,13 +110,13 @@ class EntityHandler(private val renderer: IEntityRenderer) {
 
         fun cleanEntityRenderers(plugin: Sheepy) {
             entityRenderers.forEach {
-                it.entityHandler.clean(plugin)
+                it.packetEntityHandler.clean(plugin)
             }
         }
 
         fun initializeAllEntityRenderers(plugin: Sheepy) {
             entityRenderers.forEach {
-                it.entityHandler.initializeEntityIds(plugin)
+                it.packetEntityHandler.initializeEntityIds(plugin)
             }
         }
     }

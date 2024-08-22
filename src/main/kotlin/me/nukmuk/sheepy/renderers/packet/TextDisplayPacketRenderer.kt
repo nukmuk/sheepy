@@ -15,7 +15,7 @@ import java.util.*
 
 object TextDisplayPacketRenderer : IEntityRenderer {
 
-    override val entityHandler = EntityHandler(this)
+    override val packetEntityHandler = PacketEntityHandler(this)
 
     override fun render(
         point: AnimationParticle,
@@ -25,25 +25,25 @@ object TextDisplayPacketRenderer : IEntityRenderer {
         player: CraftPlayer,
         maxParticles: Int
     ) {
-        if (!entityHandler.aliveEntityIndices.contains(entityIndexInReservedArray)) {
+        if (!packetEntityHandler.aliveEntityIndices.contains(entityIndexInReservedArray)) {
             // on spawn
             connection.send(
                 ClientboundAddEntityPacket(
-                    entityHandler.reservedEntityIds[entityIndexInReservedArray], UUID.randomUUID(),
+                    packetEntityHandler.reservedEntityIds[entityIndexInReservedArray], UUID.randomUUID(),
                     frame.animation.location.x,
                     frame.animation.location.y,
                     frame.animation.location.z,
                     0.0f, if (Math.random() > 0.5) 0.0f else 180f,
                     EntityType.TEXT_DISPLAY,
                     0,
-                    EntityHandler.zeroVec,
+                    PacketEntityHandler.zeroVec,
                     0.0
                 )
             )
 
             connection.send(
                 ClientboundSetEntityDataPacket(
-                    entityHandler.reservedEntityIds[entityIndexInReservedArray],
+                    packetEntityHandler.reservedEntityIds[entityIndexInReservedArray],
                     listOf(
                         SynchedEntityData.DataValue(
                             8, // Interpolation delay
@@ -69,15 +69,15 @@ object TextDisplayPacketRenderer : IEntityRenderer {
                 )
             )
 
-            entityHandler.aliveEntityIndices.add(entityIndexInReservedArray)
-            entityHandler.playersWhoPacketsHaveBeenSentTo.add(player.uniqueId)
+            packetEntityHandler.aliveEntityIndices.add(entityIndexInReservedArray)
+            packetEntityHandler.playersWhoPacketsHaveBeenSentTo.add(player.uniqueId)
         }
 
 
         // every frame
         connection.send(
             ClientboundSetEntityDataPacket(
-                entityHandler.reservedEntityIds[entityIndexInReservedArray],
+                packetEntityHandler.reservedEntityIds[entityIndexInReservedArray],
                 listOf(
                     SynchedEntityData.DataValue(
                         25, // Background color

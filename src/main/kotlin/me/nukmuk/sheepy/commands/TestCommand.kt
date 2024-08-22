@@ -4,7 +4,7 @@ import dev.jorel.commandapi.kotlindsl.anyExecutor
 import dev.jorel.commandapi.kotlindsl.subcommand
 import me.nukmuk.sheepy.AnimationsManager
 import me.nukmuk.sheepy.Sheepy
-import me.nukmuk.sheepy.renderers.packet.EntityHandler
+import me.nukmuk.sheepy.renderers.packet.PacketEntityHandler
 import me.nukmuk.sheepy.utils.Utils
 
 class TestCommand(plugin: Sheepy) {
@@ -12,7 +12,7 @@ class TestCommand(plugin: Sheepy) {
         withPermission("sheepy.test")
         anyExecutor { sender, args ->
 //            val result = ColorUtil.uniqueBlockColors
-            val result = EntityHandler.cleanEntityRenderers(plugin)
+            val result = PacketEntityHandler.cleanEntityRenderers(plugin)
             Utils.sendMessage(sender, "$result")
             AnimationsManager.animations.forEach {
                 it.value.renderType = null

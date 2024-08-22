@@ -15,8 +15,8 @@ interface IEntityRenderer {
         player: CraftPlayer,
         maxParticles: Int
     )
-    val entityHandler: EntityHandler
+    val packetEntityHandler: PacketEntityHandler
     fun playFrames(frames: List<Frame>, maxParticles: Int, plugin: Sheepy) {
-        entityHandler.playFrames(frames, maxParticles, plugin)
+        packetEntityHandler.playFrames(frames, maxParticles, plugin)
     }
 }

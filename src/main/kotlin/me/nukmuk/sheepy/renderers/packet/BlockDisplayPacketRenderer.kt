@@ -15,7 +15,7 @@ import java.util.*
 
 object BlockDisplayPacketRenderer : IEntityRenderer {
 
-    override val entityHandler = EntityHandler(this)
+    override val packetEntityHandler = PacketEntityHandler(this)
 
     override fun render(
         point: AnimationParticle,
@@ -27,11 +27,11 @@ object BlockDisplayPacketRenderer : IEntityRenderer {
     ) {
         val block = ColorUtil.getBlockWithColor(point.color)
 
-        if (!entityHandler.aliveEntityIndices.contains(entityIndexInReservedArray)) {
+        if (!packetEntityHandler.aliveEntityIndices.contains(entityIndexInReservedArray)) {
             // on spawn
             connection.send(
                 ClientboundAddEntityPacket(
-                    entityHandler.reservedEntityIds[entityIndexInReservedArray], UUID.randomUUID(),
+                    packetEntityHandler.reservedEntityIds[entityIndexInReservedArray], UUID.randomUUID(),
                     frame.animation.location.x,
                     frame.animation.location.y,
                     frame.animation.location.z,
@@ -39,17 +39,17 @@ object BlockDisplayPacketRenderer : IEntityRenderer {
                     0.0f,
                     EntityType.BLOCK_DISPLAY,
                     0,
-                    EntityHandler.zeroVec,
+                    PacketEntityHandler.zeroVec,
                     0.0
                 )
             )
 
-            entityHandler.aliveEntityIndices.add(entityIndexInReservedArray)
-            entityHandler.playersWhoPacketsHaveBeenSentTo.add(player.uniqueId)
+            packetEntityHandler.aliveEntityIndices.add(entityIndexInReservedArray)
+            packetEntityHandler.playersWhoPacketsHaveBeenSentTo.add(player.uniqueId)
 
             connection.send(
                 ClientboundSetEntityDataPacket(
-                    entityHandler.reservedEntityIds[entityIndexInReservedArray],
+                    packetEntityHandler.reservedEntityIds[entityIndexInReservedArray],
                     listOf(
                         SynchedEntityData.DataValue(
                             17, // View range
@@ -97,7 +97,7 @@ object BlockDisplayPacketRenderer : IEntityRenderer {
 
         connection.send(
             ClientboundSetEntityDataPacket(
-                entityHandler.reservedEntityIds[entityIndexInReservedArray],
+                packetEntityHandler.reservedEntityIds[entityIndexInReservedArray],
                 metas
             )
         )

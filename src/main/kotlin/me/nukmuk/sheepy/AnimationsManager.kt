@@ -1,10 +1,10 @@
 package me.nukmuk.sheepy
 
-import me.nukmuk.sheepy.renderers.packet.EntityHandler
+import me.nukmuk.sheepy.renderers.packet.PacketEntityHandler
 import me.nukmuk.sheepy.renderers.ParticleRenderer
 import me.nukmuk.sheepy.renderers.packet.BlockDisplayPacketRenderer
 import me.nukmuk.sheepy.renderers.packet.TextDisplayPacketRenderer
-import me.nukmuk.sheepy.renderers.packet.TextDisplayRenderer
+import me.nukmuk.sheepy.renderers.TextDisplayRenderer
 import me.nukmuk.sheepy.utils.Utils
 import org.bukkit.Location
 import org.bukkit.scheduler.BukkitRunnable
@@ -62,7 +62,7 @@ object AnimationsManager {
                     return
                 }
                 if (animations.values.filter { it.renderType != RenderType.PARTICLE }.find { it.playing } == null) {
-                    EntityHandler.cleanEntityRenderers(plugin)
+                    PacketEntityHandler.cleanEntityRenderers(plugin)
                 }
                 if (animations.isEmpty()) return
                 processing = true
@@ -113,7 +113,7 @@ object AnimationsManager {
                             plugin
                         )
 
-                        RenderType.TEXT_DISPLAY -> TextDisplayRenderer.playFrames(
+                        RenderType.TEXT_DISPLAY -> TextDisplayRenderer.prepareFrames(
                             framesOfThisType,
                             maxParticles,
                             plugin

@@ -3,7 +3,7 @@ package me.nukmuk.sheepy.commands
 import dev.jorel.commandapi.arguments.ArgumentSuggestions
 import dev.jorel.commandapi.kotlindsl.*
 import me.nukmuk.sheepy.*
-import me.nukmuk.sheepy.renderers.packet.EntityHandler
+import me.nukmuk.sheepy.renderers.packet.PacketEntityHandler
 import me.nukmuk.sheepy.utils.Utils
 import org.bukkit.FluidCollisionMode
 import org.bukkit.Location
@@ -427,7 +427,7 @@ class SheepyCommand(private val plugin: Sheepy) {
             animation.renderType = null
 
             plugin.logger.info("Running EntityCleaner after rendertype changed")
-            EntityHandler.cleanEntityRenderers(plugin)
+            PacketEntityHandler.cleanEntityRenderers(plugin)
             animation.renderType = newRenderType
             Utils.sendMessage(
                 sender,
