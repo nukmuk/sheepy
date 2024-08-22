@@ -5,7 +5,8 @@ object Config {
     const val VAR_COLOR = "<gray>"
     const val PRIMARY_COLOR = "<white>"
     const val ERROR_COLOR = "<red>"
-    const val PLUGIN_PREFIX = "<gray>[<gradient:#e64ffe:#ff3dd4>Sheepy</gradient><gray>]"
+    val PLUGIN_NAME_COLORS = "<gradient:#e64ffe:#ff3dd4>${Sheepy::class.simpleName}</gradient>"
+    val PLUGIN_PREFIX = "<gray>[$PLUGIN_NAME_COLORS<gray>]"
 
     object Strings {
         const val NO_PERMISSION = "${ERROR_COLOR}You don't have permissions to this command"

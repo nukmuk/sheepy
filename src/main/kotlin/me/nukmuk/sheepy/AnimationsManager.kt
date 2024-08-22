@@ -1,9 +1,10 @@
 package me.nukmuk.sheepy
 
-import me.nukmuk.sheepy.renderers.BlockDisplayRenderer
-import me.nukmuk.sheepy.renderers.EntityHandler
+import me.nukmuk.sheepy.renderers.packet.EntityHandler
 import me.nukmuk.sheepy.renderers.ParticleRenderer
-import me.nukmuk.sheepy.renderers.TextDisplayRenderer
+import me.nukmuk.sheepy.renderers.packet.BlockDisplayPacketRenderer
+import me.nukmuk.sheepy.renderers.packet.TextDisplayPacketRenderer
+import me.nukmuk.sheepy.renderers.packet.TextDisplayRenderer
 import me.nukmuk.sheepy.utils.Utils
 import org.bukkit.Location
 import org.bukkit.scheduler.BukkitRunnable
@@ -100,7 +101,13 @@ object AnimationsManager {
                     val framesOfThisType = framesToBePlayed.filter { it.animation.renderType == type }
                     when (type) {
                         RenderType.PARTICLE -> ParticleRenderer.playFrames(framesOfThisType, maxParticles)
-                        RenderType.BLOCK_DISPLAY -> BlockDisplayRenderer.playFrames(
+                        RenderType.BLOCK_DISPLAY -> BlockDisplayPacketRenderer.playFrames(
+                            framesOfThisType,
+                            maxParticles,
+                            plugin
+                        )
+
+                        RenderType.TEXT_DISPLAY_OLD -> TextDisplayPacketRenderer.playFrames(
                             framesOfThisType,
                             maxParticles,
                             plugin

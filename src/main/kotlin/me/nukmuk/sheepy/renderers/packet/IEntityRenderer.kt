@@ -1,4 +1,4 @@
-package me.nukmuk.sheepy.renderers
+package me.nukmuk.sheepy.renderers.packet
 
 import me.nukmuk.sheepy.AnimationParticle
 import me.nukmuk.sheepy.Frame

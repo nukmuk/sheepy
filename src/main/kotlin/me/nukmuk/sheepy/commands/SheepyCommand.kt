@@ -3,8 +3,7 @@ package me.nukmuk.sheepy.commands
 import dev.jorel.commandapi.arguments.ArgumentSuggestions
 import dev.jorel.commandapi.kotlindsl.*
 import me.nukmuk.sheepy.*
-import me.nukmuk.sheepy.renderers.BlockDisplayRenderer
-import me.nukmuk.sheepy.renderers.EntityHandler
+import me.nukmuk.sheepy.renderers.packet.EntityHandler
 import me.nukmuk.sheepy.utils.Utils
 import org.bukkit.FluidCollisionMode
 import org.bukkit.Location
@@ -32,6 +31,20 @@ class SheepyCommand(private val plugin: Sheepy) {
             subcommand(debug)
             subcommand(renderType)
             subcommand(TestCommand(plugin).test)
+
+            anyExecutor { sender, args ->
+                sender.sendMessage(
+                    Utils.mm.deserialize(
+                        "<dark_gray><st>        <reset> ${Config.PLUGIN_NAME_COLORS} <gray>${plugin.description.version} <dark_gray><st>        <reset>\n" +
+//                                "<reset>${Config.PRIMARY_COLOR}To get started:\n" +
+                                "${Config.PRIMARY_COLOR}/sh create ${Config.VAR_COLOR}<animation>\n" +
+                                "${Config.PRIMARY_COLOR}/sh rendertype ${Config.VAR_COLOR}<animation> <type>\n" +
+                                "${Config.PRIMARY_COLOR}/sh scale ${Config.VAR_COLOR}<animation> <number>"
+                    )
+                )
+
+            }
+
         }
     }
 

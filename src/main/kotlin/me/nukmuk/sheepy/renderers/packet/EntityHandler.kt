@@ -1,7 +1,6 @@
-package me.nukmuk.sheepy.renderers
+package me.nukmuk.sheepy.renderers.packet
 
 import me.nukmuk.sheepy.*
-import me.nukmuk.sheepy.utils.Utils
 import net.minecraft.network.protocol.game.ClientboundRemoveEntitiesPacket
 import net.minecraft.world.entity.EntityType
 import net.minecraft.world.phys.Vec3
@@ -46,7 +45,7 @@ class EntityHandler(private val renderer: IEntityRenderer) {
 
                 val entitiesStartIndex = (maxParticlesPerTick / frames.size) * frameIndex
 
-                Utils.sendDebugMessage("particlesAllocated: $particlesAllocatedPerAnimation, entityStartIndex: $entitiesStartIndex, frameIndex: $frameIndex, name: ${frame.animation.name}")
+//                Utils.sendDebugMessage("particlesAllocated: $particlesAllocatedPerAnimation, entityStartIndex: $entitiesStartIndex, frameIndex: $frameIndex, name: ${frame.animation.name}")
 
 
 
@@ -107,7 +106,7 @@ class EntityHandler(private val renderer: IEntityRenderer) {
         val zeroVec = Vec3(0.0, 0.0, 0.0)
 
         // must be manually updated 🙄
-        private val entityRenderers = arrayListOf(BlockDisplayRenderer, TextDisplayRenderer)
+        private val entityRenderers = arrayListOf(BlockDisplayPacketRenderer, TextDisplayPacketRenderer)
 
         fun cleanEntityRenderers(plugin: Sheepy) {
             entityRenderers.forEach {

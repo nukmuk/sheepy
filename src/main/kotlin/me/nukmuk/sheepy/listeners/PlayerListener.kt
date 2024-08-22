@@ -1,7 +1,7 @@
 package me.nukmuk.sheepy.listeners
 
 import me.nukmuk.sheepy.Sheepy
-import me.nukmuk.sheepy.renderers.EntityHandler
+import me.nukmuk.sheepy.renderers.packet.EntityHandler
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.event.player.PlayerChangedWorldEvent

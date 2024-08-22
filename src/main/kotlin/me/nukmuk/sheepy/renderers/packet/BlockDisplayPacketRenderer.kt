@@ -1,4 +1,4 @@
-package me.nukmuk.sheepy.renderers
+package me.nukmuk.sheepy.renderers.packet
 
 import me.nukmuk.sheepy.AnimationParticle
 import me.nukmuk.sheepy.Frame
@@ -13,7 +13,7 @@ import org.bukkit.craftbukkit.entity.CraftPlayer
 import org.joml.Vector3f
 import java.util.*
 
-object BlockDisplayRenderer : IEntityRenderer {
+object BlockDisplayPacketRenderer : IEntityRenderer {
 
     override val entityHandler = EntityHandler(this)
 

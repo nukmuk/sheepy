@@ -29,7 +29,11 @@ object ColorUtil {
                 colorMap[colorKey] = ColorBlock(Blocks.BLACK_CONCRETE, color)
                 continue
             }
-            if (block.toString().contains("minecraft:glass")) continue
+//            if (block.toString().contains("minecraft:glass")) continue
+            if (!block.toString().contains("concrete") && !block.toString().contains("wool") && !block.toString()
+                    .contains("plank") && !block.toString().contains("stone") && !block.toString()
+                    .contains("terracotta")
+            ) continue
 //            if (block.toString().contains("rail")) continue
 //            if (block.toString().contains("torch")) continue
 //            if (block.toString().contains("redstone")) continue

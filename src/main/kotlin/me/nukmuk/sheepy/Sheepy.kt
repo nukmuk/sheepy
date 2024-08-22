@@ -3,7 +3,7 @@ package me.nukmuk.sheepy
 import dev.jorel.commandapi.CommandAPI
 import dev.jorel.commandapi.CommandAPIBukkitConfig
 import me.nukmuk.sheepy.commands.SheepyCommand
-import me.nukmuk.sheepy.renderers.EntityHandler
+import me.nukmuk.sheepy.renderers.packet.EntityHandler
 import me.nukmuk.sheepy.listeners.PlayerListener
 import org.bukkit.plugin.java.JavaPlugin
 
