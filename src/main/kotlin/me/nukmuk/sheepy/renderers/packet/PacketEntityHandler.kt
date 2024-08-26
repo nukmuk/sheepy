@@ -20,8 +20,6 @@ class PacketEntityHandler(private val renderer: IEntityRenderer) {
     private var animationsLastTick = 0
     private var maxParticlesLastTick: Int? = null
 
-    val playersWhoPacketsHaveBeenSentTo = mutableListOf<UUID>()
-
     fun playFrames(frames: List<Frame>, maxParticles: Int, plugin: Sheepy) {
         if (frames.isEmpty()) return
         val maxParticlesPerTick = if (maxParticles == 0) reservedEntityIds.size else min(
@@ -36,9 +34,6 @@ class PacketEntityHandler(private val renderer: IEntityRenderer) {
         if (shouldUpdateEntities)
             clean(plugin)
 //        Utils.sendDebugMessage("aliveEntities: ${aliveEntityIndices.size}, shouldUpdateEntities: $shouldUpdateEntities, animationsLastTick: $animationsLastTick, frames: ${frames.size}")
-        plugin.server.onlinePlayers.forEach { player ->
-            val craftPlayer = player as CraftPlayer
-            val connection = craftPlayer.handle.connection
 
 
             frames.forEachIndexed { frameIndex, frame ->
@@ -59,15 +54,13 @@ class PacketEntityHandler(private val renderer: IEntityRenderer) {
                     renderer.render(
                         point,
                         entityIndexInReservedArray,
-                        connection,
                         frame,
-                        player,
-                        maxParticles
+                        maxParticles,
+                        plugin
                     )
                 }
             }
 
-        }
         animationsLastTick = frames.size
         maxParticlesLastTick = maxParticlesPerTick
         shouldUpdateEntities = false

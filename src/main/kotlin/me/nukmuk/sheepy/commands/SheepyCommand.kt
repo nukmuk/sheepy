@@ -365,12 +365,28 @@ class SheepyCommand(private val plugin: Sheepy) {
         stringArgument("animationName") {
             replaceSuggestions(currentAnimationsSuggestion())
         }
-        floatArgument("rotation", optional = true, min = 0f, max = 360f) {
+        floatArgument("rotationY", optional = true, min = 0f, max = 360f) {
             replaceSuggestions(ArgumentSuggestions.strings({ info ->
                 val animationName = info.previousArgs["animationName"] as String
                 val animation = AnimationsManager.getAnimation(animationName)
                 if (animation == null) return@strings arrayOf()
-                return@strings arrayOf(Utils.toDegrees(animation.animationRotation).roundToInt().toString())
+                return@strings arrayOf(Utils.toDegrees(animation.animationRotationY).roundToInt().toString())
+            }))
+        }
+        floatArgument("rotationX", optional = true, min = 0f, max = 360f) {
+            replaceSuggestions(ArgumentSuggestions.strings({ info ->
+                val animationName = info.previousArgs["animationName"] as String
+                val animation = AnimationsManager.getAnimation(animationName)
+                if (animation == null) return@strings arrayOf()
+                return@strings arrayOf(Utils.toDegrees(animation.animationRotationX).roundToInt().toString())
+            }))
+        }
+        floatArgument("rotationZ", optional = true, min = 0f, max = 360f) {
+            replaceSuggestions(ArgumentSuggestions.strings({ info ->
+                val animationName = info.previousArgs["animationName"] as String
+                val animation = AnimationsManager.getAnimation(animationName)
+                if (animation == null) return@strings arrayOf()
+                return@strings arrayOf(Utils.toDegrees(animation.animationRotationZ).roundToInt().toString())
             }))
         }
         anyExecutor { sender, args ->
@@ -386,11 +402,11 @@ class SheepyCommand(private val plugin: Sheepy) {
             if (newRotation == null) {
                 Utils.sendMessage(
                     sender,
-                    "Current animation rotation: ${Config.VAR_COLOR}${Utils.toDegrees(animation.animationRotation)}°"
+                    "Current animation rotation: ${Config.VAR_COLOR}${Utils.toDegrees(animation.animationRotationY)}°"
                 )
                 return@anyExecutor
             }
-            animation.animationRotation = org.joml.Math.toRadians(newRotation)
+            animation.animationRotationY = org.joml.Math.toRadians(newRotation)
             Utils.sendMessage(
                 sender,
                 "Set animation rotation to ${Config.VAR_COLOR}${newRotation}° ${Config.PRIMARY_COLOR}for ${Config.VAR_COLOR}${animation.name}"

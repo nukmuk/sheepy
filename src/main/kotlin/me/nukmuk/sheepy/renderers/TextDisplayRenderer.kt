@@ -12,7 +12,9 @@ import java.util.concurrent.ConcurrentLinkedQueue
 object TextDisplayRenderer {
 
     private val entities = mutableListOf<TextDisplay>()
-    private val pointsToSpawn = ConcurrentLinkedQueue<AnimationParticle>()
+
+    @Volatile
+    private var pointsToSpawn = mutableListOf<AnimationParticle>()
 
     fun initializeTextDisplaysEntityHandler(plugin: Sheepy) {
         var processing = false
@@ -51,8 +53,9 @@ object TextDisplayRenderer {
                     entities.remove(entities[i])
                 }
             } else {
-                Utils.sendDebugMessage("not entities, entities: ${entities.size} pointsToSpawn: ${pointsToSpawn.size}")
+//                Utils.sendDebugMessage("not removing entities, entities: ${entities.size} pointsToSpawn: ${pointsToSpawn.size}")
             }
+            pointsToSpawn.clear()
             processing = false
         }, 0, 1)
     }

@@ -32,7 +32,9 @@ class Animation(
 
     var particleScale = 1.0f
     var animationScale = 1.0f
-    var animationRotation = 0.0f
+    var animationRotationY = 0.0f
+    var animationRotationX = 0.0f
+    var animationRotationZ = 0.0f
     var repeat = false
     var renderType: RenderType? = RenderType.PARTICLE
 
@@ -85,6 +87,11 @@ class Animation(
         if (reader.available() >= 4) {
             val length = getShort().toInt()
 
+            if (length < 0) {
+                Bukkit.getLogger().warning("Invalid frame length: $length in animation $name")
+                return null
+            }
+
             frame = Frame(
                 arrayOfNulls<AnimationParticle>(length),
                 this
@@ -97,7 +104,9 @@ class Animation(
                     getPosComponent() * animationScale,
                     getPosComponent() * animationScale
                 )
-                position.rotateY(animationRotation)
+                position.rotateY(animationRotationY)
+                position.rotateX(animationRotationX)
+                position.rotateZ(animationRotationZ)
                 position.add(worldLocationOffset)
                 frame.animationParticles[i] = AnimationParticle(
                     x = position.x,

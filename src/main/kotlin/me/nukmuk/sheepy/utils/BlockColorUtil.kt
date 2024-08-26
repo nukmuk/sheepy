@@ -11,7 +11,7 @@ import org.bukkit.Material
 import org.bukkit.craftbukkit.util.CraftMagicNumbers
 import kotlin.math.sqrt
 
-object ColorUtil {
+object BlockColorUtil {
     data class ColorBlock(val block: Block, val color: Color)
 
     val uniqueBlockColors: List<ColorBlock> by lazy { generateUniqueBlockColors() }
