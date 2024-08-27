@@ -1,5 +1,5 @@
 next:
-add back removing of extra entities?
+refactor all commands into their own files
 create separate text renderer that spawns the entities at right locations so that the billboard constraint can be set properly
 explore other text properties like bg and bg color
 custom text
@@ -16,6 +16,7 @@ add config and save repeating animations
 per player packets
 
 done:
+-add back removing of extra entities?
 -add debug list (only display action bar to these players), /sh debug to toggle
 -change cmd format similar to groupmanager, luckperms, decentholograms
 -add tab completion

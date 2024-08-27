@@ -40,7 +40,9 @@ class Animation(
 
     var shouldBeDeleted = false
 
-    var textForTextRenderer = "  "
+    var textForTextRenderer = name[0].toString()
+    var textMode = TextMode.BACKGROUND
+    var randomRotationMode = RandomRotation.YAW
 
     fun start() {
         playing = true

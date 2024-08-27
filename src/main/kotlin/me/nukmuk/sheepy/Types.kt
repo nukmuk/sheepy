@@ -20,3 +20,14 @@ enum class RenderType {
     TEXT_DISPLAY_OLD,
     TEXT_DISPLAY
 }
+
+enum class TextMode {
+    BACKGROUND,
+    TEXT
+}
+
+enum class RandomRotation {
+    NONE,
+    YAW,
+    FULL
+}

@@ -31,6 +31,9 @@ class SheepyCommand(private val plugin: Sheepy) {
             subcommand(debug)
             subcommand(renderType)
             subcommand(tphere)
+            subcommand(text)
+            subcommand(textmode)
+            subcommand(textrotationmode)
 
             subcommand(TestCommand(plugin).test)
 
@@ -38,10 +41,10 @@ class SheepyCommand(private val plugin: Sheepy) {
                 sender.sendMessage(
                     Utils.mm.deserialize(
                         "<dark_gray><st>        <reset> ${Config.PLUGIN_NAME_COLORS} <gray>${plugin.description.version} <dark_gray><st>        <reset>\n" +
-//                                "<reset>${Config.PRIMARY_COLOR}To get started:\n" +
-                                "${Config.PRIMARY_COLOR}/sh create ${Config.VAR_COLOR}<animation>\n" +
-                                "${Config.PRIMARY_COLOR}/sh rendertype ${Config.VAR_COLOR}<animation> <type>\n" +
-                                "${Config.PRIMARY_COLOR}/sh scale ${Config.VAR_COLOR}<animation> <number>"
+                                "<reset>${Config.VAR_COLOR}To get started:\n" +
+                                "${Config.VAR_COLOR}- ${Config.PRIMARY_COLOR}/sh create ${Config.VAR_COLOR}<animation>\n" +
+                                "${Config.VAR_COLOR}- ${Config.PRIMARY_COLOR}/sh rendertype ${Config.VAR_COLOR}<animation> <type>\n" +
+                                "${Config.VAR_COLOR}- ${Config.PRIMARY_COLOR}/sh scale ${Config.VAR_COLOR}<animation> <number>"
                     )
                 )
 
@@ -439,8 +442,6 @@ class SheepyCommand(private val plugin: Sheepy) {
             val newRenderType = RenderType.entries.find { it.name == args["renderType"] }
             val animation = AnimationsManager.getAnimation(animationName)
 
-            Utils.sendMessage(sender, "arg: $newRenderType")
-
             if (animation == null) {
                 Utils.sendMessage(sender, "No animation ${Config.VAR_COLOR}${animationName}")
                 return@anyExecutor
@@ -485,6 +486,124 @@ class SheepyCommand(private val plugin: Sheepy) {
             Utils.sendMessage(
                 sender,
                 "Teleported ${Config.VAR_COLOR}${animation.name} ${Config.PRIMARY_COLOR}to you"
+            )
+        }
+    }
+
+    private val text = subcommand("text") {
+        stringArgument("animationName") {
+            replaceSuggestions(currentAnimationsSuggestion())
+        }
+        textArgument("text", optional = true) {
+            replaceSuggestions(ArgumentSuggestions.strings({ info ->
+                val animationName = info.previousArgs["animationName"] as String
+                val animation = AnimationsManager.getAnimation(animationName)
+                if (animation == null) return@strings arrayOf()
+                return@strings arrayOf(animation.textForTextRenderer.toString())
+            }))
+
+        }
+        anyExecutor { sender, args ->
+            val animationName = args["animationName"] as String
+            val newText = args["text"] as String?
+            val animation = AnimationsManager.getAnimation(animationName)
+
+            if (animation == null) {
+                Utils.sendMessage(sender, "No animation ${Config.VAR_COLOR}${animationName}")
+                return@anyExecutor
+            }
+
+            if (newText == null) {
+                Utils.sendMessage(
+                    sender,
+                    "Animation ${Config.VAR_COLOR}${animation.name} ${Config.PRIMARY_COLOR}text is currently ${Config.VAR_COLOR}${animation.textMode}"
+                )
+                return@anyExecutor
+            }
+
+            animation.textForTextRenderer = newText
+
+            plugin.logger.info("Running EntityCleaner after ${animation.name} text changed")
+            PacketEntityHandler.cleanEntityRenderers(plugin)
+            Utils.sendMessage(
+                sender,
+                "Set animation ${Config.VAR_COLOR}${animation.name} ${Config.PRIMARY_COLOR}text to ${Config.VAR_COLOR}${animation.textForTextRenderer}"
+            )
+        }
+    }
+
+    private val textmode = subcommand("textmode") {
+        stringArgument("animationName") {
+            replaceSuggestions(currentAnimationsSuggestion())
+        }
+        multiLiteralArgument(
+            "textMode",
+            literals = TextMode.entries.map { it.toString() }.toTypedArray(),
+            optional = true
+        )
+        anyExecutor { sender, args ->
+            val animationName = args["animationName"] as String
+            val newTextMode = TextMode.entries.find { it.name == args["textMode"] }
+            val animation = AnimationsManager.getAnimation(animationName)
+
+            if (animation == null) {
+                Utils.sendMessage(sender, "No animation ${Config.VAR_COLOR}${animationName}")
+                return@anyExecutor
+            }
+
+            if (newTextMode == null) {
+                Utils.sendMessage(
+                    sender,
+                    "Animation ${Config.VAR_COLOR}${animation.name} ${Config.PRIMARY_COLOR}text mode is currently ${Config.VAR_COLOR}${animation.textMode}"
+                )
+                return@anyExecutor
+            }
+
+            animation.textMode = newTextMode
+
+            plugin.logger.info("Running EntityCleaner after ${animation.name} text mode changed")
+            PacketEntityHandler.cleanEntityRenderers(plugin)
+            Utils.sendMessage(
+                sender,
+                "Set animation ${Config.VAR_COLOR}${animation.name} ${Config.PRIMARY_COLOR}text mode to ${Config.VAR_COLOR}${animation.textMode}"
+            )
+        }
+    }
+
+    private val textrotationmode = subcommand("textrotation") {
+        stringArgument("animationName") {
+            replaceSuggestions(currentAnimationsSuggestion())
+        }
+        multiLiteralArgument(
+            "textRotation",
+            literals = RandomRotation.entries.map { it.toString() }.toTypedArray(),
+            optional = true
+        )
+        anyExecutor { sender, args ->
+            val animationName = args["animationName"] as String
+            val newRotationMode = RandomRotation.entries.find { it.name == args["textRotation"] }
+            val animation = AnimationsManager.getAnimation(animationName)
+
+            if (animation == null) {
+                Utils.sendMessage(sender, "No animation ${Config.VAR_COLOR}${animationName}")
+                return@anyExecutor
+            }
+
+            if (newRotationMode == null) {
+                Utils.sendMessage(
+                    sender,
+                    "Animation ${Config.VAR_COLOR}${animation.name} ${Config.PRIMARY_COLOR}text rotation mode is currently ${Config.VAR_COLOR}${animation.randomRotationMode}"
+                )
+                return@anyExecutor
+            }
+
+            animation.randomRotationMode = newRotationMode
+
+            plugin.logger.info("Running EntityCleaner after ${animation.name} RandomRotation changed")
+            PacketEntityHandler.cleanEntityRenderers(plugin)
+            Utils.sendMessage(
+                sender,
+                "Set animation ${Config.VAR_COLOR}${animation.name} ${Config.PRIMARY_COLOR}text random rotation mode to ${Config.VAR_COLOR}${animation.randomRotationMode}"
             )
         }
     }

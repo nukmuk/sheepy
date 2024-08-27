@@ -56,25 +56,22 @@ object BlockDisplayPacketRenderer : IEntityRenderer {
 
         }
 
-        val divider: Int = if (maxParticles == 0) 0 else frame.animationParticles.size / maxParticles
-
-        val scaleMultiplier = 1 + Math.clamp(divider / 30.0f, 0.0f, 2.0f)
-        val makeBlocksApproxParticleSizedConstant = 0.005f
-        val blockScale =
-            frame.animation.particleScale * point.scale.toFloat() * makeBlocksApproxParticleSizedConstant * scaleMultiplier
+        val blockScale = getBlockScale(maxParticles, frame, point)
 
         val metas = listOf(
             SynchedEntityData.DataValue(
                 23, // Displayed block state
                 EntityDataSerializers.BLOCK_STATE, block.defaultBlockState()
-            ), SynchedEntityData.DataValue(
+            ),
+            SynchedEntityData.DataValue(
                 11, // Translation
                 EntityDataSerializers.VECTOR3, Vector3f(
                     (point.x - frame.animation.location.x).toFloat(),
                     (point.y - frame.animation.location.y).toFloat(),
                     (point.z - frame.animation.location.z).toFloat()
                 )
-            ), SynchedEntityData.DataValue(
+            ),
+            SynchedEntityData.DataValue(
                 12, // Scale
                 EntityDataSerializers.VECTOR3, Vector3f(
                     blockScale,
@@ -90,4 +87,17 @@ object BlockDisplayPacketRenderer : IEntityRenderer {
         PacketUtil.sendPacketsToAllPlayers(plugin, entityDataPacket)
     }
 
+    fun getBlockScale(
+        maxParticles: Int,
+        frame: Frame,
+        point: AnimationParticle
+    ): Float {
+        val divider: Int = if (maxParticles == 0) 0 else frame.animationParticles.size / maxParticles
+
+        val scaleMultiplier = 1 + Math.clamp(divider / 30.0f, 0.0f, 2.0f)
+        val makeBlocksApproxParticleSizedConstant = 0.005f
+        val blockScale =
+            frame.animation.particleScale * point.scale.toFloat() * makeBlocksApproxParticleSizedConstant * scaleMultiplier
+        return blockScale
+    }
 }
