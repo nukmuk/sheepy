@@ -72,7 +72,6 @@ object TextDisplayRenderer {
         }
     }
 
-    private fun render(point: AnimationParticle, pointIndex: Int, frame: Frame, maxParticles: Int, plugin: Sheepy) {}
 
     fun removeEntities() {
         entities.forEach { it.remove() }

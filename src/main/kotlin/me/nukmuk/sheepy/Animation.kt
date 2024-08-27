@@ -84,41 +84,42 @@ class Animation(
 
         val frame: Frame
 
-        if (reader.available() >= 4) {
-            val length = getShort().toInt()
-
-            if (length < 0) {
-                Bukkit.getLogger().warning("Invalid frame length: $length in animation $name")
-                return null
-            }
-
-            frame = Frame(
-                arrayOfNulls<AnimationParticle>(length),
-                this
-            )
-
-            // loop over particles and add them to frame
-            for (i in 0 until length) {
-                val position = Vector3f(
-                    getPosComponent() * animationScale,
-                    getPosComponent() * animationScale,
-                    getPosComponent() * animationScale
-                )
-                position.rotateY(animationRotationY)
-                position.rotateX(animationRotationX)
-                position.rotateZ(animationRotationZ)
-                position.add(worldLocationOffset)
-                frame.animationParticles[i] = AnimationParticle(
-                    x = position.x,
-                    y = position.y,
-                    z = position.z,
-                    color = Color.fromARGB(getInt()),
-                )
-            }
-        } else {
+        if (reader.available() < 4) {
             playing = false
             Utils.sendDebugMessage("Animation $name buffer empty")
+            remove()
             return null
+        }
+
+        val length = getShort().toInt()
+
+        if (length < 0) {
+            Bukkit.getLogger().warning("Invalid frame length: $length in animation $name")
+            return null
+        }
+
+        frame = Frame(
+            arrayOfNulls<AnimationParticle>(length),
+            this
+        )
+
+        // loop over particles and add them to frame
+        for (i in 0 until length) {
+            val position = Vector3f(
+                getPosComponent() * animationScale,
+                getPosComponent() * animationScale,
+                getPosComponent() * animationScale
+            )
+            position.rotateY(animationRotationY)
+            position.rotateX(animationRotationX)
+            position.rotateZ(animationRotationZ)
+            position.add(worldLocationOffset)
+            frame.animationParticles[i] = AnimationParticle(
+                x = position.x,
+                y = position.y,
+                z = position.z,
+                color = Color.fromARGB(getInt()),
+            )
         }
 
         i++

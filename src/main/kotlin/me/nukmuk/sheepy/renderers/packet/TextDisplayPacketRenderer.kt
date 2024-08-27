@@ -17,8 +17,6 @@ object TextDisplayPacketRenderer : IEntityRenderer {
 
     override val packetEntityHandler = PacketEntityHandler(this)
 
-    lateinit var lastFrame: Frame
-
     override fun render(
         point: AnimationParticle,
         entityIndexInReservedArray: Int,

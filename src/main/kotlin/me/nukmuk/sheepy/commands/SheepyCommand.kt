@@ -30,6 +30,8 @@ class SheepyCommand(private val plugin: Sheepy) {
             subcommand(rotation)
             subcommand(debug)
             subcommand(renderType)
+            subcommand(tphere)
+
             subcommand(TestCommand(plugin).test)
 
             anyExecutor { sender, args ->
@@ -391,7 +393,9 @@ class SheepyCommand(private val plugin: Sheepy) {
         }
         anyExecutor { sender, args ->
             val animationName = args["animationName"] as String
-            val newRotation = args["rotation"] as? Float
+            val newRotationY = args["rotationY"] as? Float
+            val newRotationX = args["rotationX"] as? Float
+            val newRotationZ = args["rotationZ"] as? Float
             val animation = AnimationsManager.getAnimation(animationName)
 
             if (animation == null) {
@@ -399,17 +403,26 @@ class SheepyCommand(private val plugin: Sheepy) {
                 return@anyExecutor
             }
 
-            if (newRotation == null) {
+            if (newRotationY == null) {
                 Utils.sendMessage(
                     sender,
-                    "Current animation rotation: ${Config.VAR_COLOR}${Utils.toDegrees(animation.animationRotationY)}°"
+                    "Current animation rotation: Y: ${Config.VAR_COLOR}${Utils.toDegrees(animation.animationRotationY)}° X: ${Config.VAR_COLOR}${
+                        Utils.toDegrees(
+                            animation.animationRotationY
+                        )
+                    }° Z: ${Config.VAR_COLOR}${Utils.toDegrees(animation.animationRotationY)}°" //todo colors
                 )
                 return@anyExecutor
             }
-            animation.animationRotationY = org.joml.Math.toRadians(newRotation)
+            animation.animationRotationY = org.joml.Math.toRadians(newRotationY)
+            if (newRotationX != null)
+                animation.animationRotationX = org.joml.Math.toRadians(newRotationX)
+            if (newRotationZ != null)
+                animation.animationRotationZ = org.joml.Math.toRadians(newRotationZ)
+
             Utils.sendMessage(
                 sender,
-                "Set animation rotation to ${Config.VAR_COLOR}${newRotation}° ${Config.PRIMARY_COLOR}for ${Config.VAR_COLOR}${animation.name}"
+                "Set animation rotation to Y: ${Config.VAR_COLOR}${newRotationY}° X: ${Config.VAR_COLOR}${newRotationY}° Z: ${Config.VAR_COLOR}${newRotationY}° ${Config.PRIMARY_COLOR}for ${Config.VAR_COLOR}${animation.name}"
             )
         }
     }
@@ -448,6 +461,30 @@ class SheepyCommand(private val plugin: Sheepy) {
             Utils.sendMessage(
                 sender,
                 "Set render type to ${Config.VAR_COLOR}${newRenderType} ${Config.PRIMARY_COLOR}for animation ${Config.VAR_COLOR}${animation.name}"
+            )
+        }
+    }
+
+    private val tphere = subcommand("tphere") {
+        stringArgument("animationName") {
+            replaceSuggestions(currentAnimationsSuggestion())
+        }
+        playerExecutor { sender, args ->
+            val animationName = args["animationName"] as String
+            val animation = AnimationsManager.getAnimation(animationName)
+
+            if (animation == null) {
+                Utils.sendMessage(sender, "No animation ${Config.VAR_COLOR}${animationName}")
+                return@playerExecutor
+            }
+
+            animation.location = sender.location
+
+            plugin.logger.info("Running EntityCleaner after ${animation.name} location changed")
+            PacketEntityHandler.cleanEntityRenderers(plugin)
+            Utils.sendMessage(
+                sender,
+                "Teleported ${Config.VAR_COLOR}${animation.name} ${Config.PRIMARY_COLOR}to you"
             )
         }
     }
