@@ -13,7 +13,6 @@ object TextDisplayRenderer {
 
     private val entities = mutableListOf<TextDisplay>()
 
-    @Volatile
     private var pointsToSpawn = mutableListOf<AnimationParticle>()
 
     fun initializeTextDisplaysEntityHandler(plugin: Sheepy) {
@@ -21,7 +20,7 @@ object TextDisplayRenderer {
         plugin.server.scheduler.runTaskTimer(plugin, Runnable {
 //            Utils.sendDebugMessage("entities: ${entities.size} pointsToSpawn: ${pointsToSpawn.size}, processing $processing")
             if (processing) {
-//                Utils.sendDebugMessage("${this.javaClass.simpleName} still processing!")
+                Utils.sendDebugMessage("${this.javaClass.simpleName} still processing!")
                 return@Runnable
             }
             processing = true
@@ -40,8 +39,14 @@ object TextDisplayRenderer {
 
                 // every frame
                 val entity = entities[pointIndex]
-                entity.teleport(location)
-                entity.backgroundColor = point.color.setAlpha(255)
+                try {
+                    entity.teleport(location)
+                    entity.backgroundColor = point.color.setAlpha(255)
+                } catch (e: Exception) {
+                    plugin.logger.warning("TextDisplayRenderer error: $e")
+                    processing = false
+                    return@Runnable
+                }
             }
 
             // remove extra leftovers from previous frame
@@ -61,15 +66,18 @@ object TextDisplayRenderer {
     }
 
     fun prepareFrames(frames: Collection<Frame>, maxParticles: Int, plugin: Sheepy) {
-        pointsToSpawn.clear()
-        frames.forEach { frame ->
-            frame.animationParticles.forEachIndexed { pointIndex, point ->
-                if (point == null) return@forEachIndexed
-                if (pointIndex < maxParticles) {
-                    pointsToSpawn.add(point)
+        plugin.server.scheduler.runTask(plugin, Runnable {
+
+            pointsToSpawn.clear()
+            frames.forEach { frame ->
+                frame.animationParticles.forEachIndexed { pointIndex, point ->
+                    if (point == null) return@forEachIndexed
+                    if (pointIndex < maxParticles) {
+                        pointsToSpawn.add(point)
+                    }
                 }
             }
-        }
+        })
     }
 
 

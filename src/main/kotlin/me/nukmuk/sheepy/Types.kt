@@ -16,8 +16,8 @@ data class AnimationParticle(
 
 enum class RenderType {
     PARTICLE,
-    BLOCK_DISPLAY,
-    TEXT_DISPLAY_OLD,
+    BLOCK_DISPLAY_PACKET,
+    TEXT_DISPLAY_PACKET,
     TEXT_DISPLAY
 }
 

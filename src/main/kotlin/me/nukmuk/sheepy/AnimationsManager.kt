@@ -101,13 +101,13 @@ object AnimationsManager {
                     val framesOfThisType = framesToBePlayed.filter { it.animation.renderType == type }
                     when (type) {
                         RenderType.PARTICLE -> ParticleRenderer.playFrames(framesOfThisType, maxParticles)
-                        RenderType.BLOCK_DISPLAY -> BlockDisplayPacketRenderer.playFrames(
+                        RenderType.BLOCK_DISPLAY_PACKET -> BlockDisplayPacketRenderer.playFrames(
                             framesOfThisType,
                             maxParticles,
                             plugin
                         )
 
-                        RenderType.TEXT_DISPLAY_OLD -> TextDisplayPacketRenderer.playFrames(
+                        RenderType.TEXT_DISPLAY_PACKET -> TextDisplayPacketRenderer.playFrames(
                             framesOfThisType,
                             maxParticles,
                             plugin
