@@ -121,6 +121,7 @@ class Animation(
                 y = position.y,
                 z = position.z,
                 color = Color.fromARGB(getInt()),
+                frame
             )
         }
 

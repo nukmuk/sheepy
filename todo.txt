@@ -1,13 +1,10 @@
 next:
-refactor all commands into their own files
-create separate text renderer that spawns the entities at right locations so that the billboard constraint can be set properly
-explore other text properties like bg and bg color
-custom text
-block and text scale
+refactor: all commands into their own files
 different block palettes
 effects when walking inside animations
 config file to toggle particles "force" property, toggle with command too
 fix command aliases/usages (?)
+optimization: remove Frame from AnimationParticle
 
 add other particles, display entities
 maybe make format big endian instead
@@ -16,6 +13,10 @@ add config and save repeating animations
 per player packets
 
 done:
+-explore other text properties like bg and bg color
+-custom text
+-block and text scale
+-create separate text renderer that spawns the entities at right locations so that the billboard constraint can be set properly
 -add back removing of extra entities?
 -add debug list (only display action bar to these players), /sh debug to toggle
 -change cmd format similar to groupmanager, luckperms, decentholograms

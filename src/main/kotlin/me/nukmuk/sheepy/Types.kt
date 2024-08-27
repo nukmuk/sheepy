@@ -8,7 +8,8 @@ data class AnimationParticle(
     val x: Float,
     val y: Float,
     val z: Float,
-    val color: Color
+    val color: Color,
+    val frame: Frame
 ) {
     val scale: Byte
         get() = color.alpha.toByte()
