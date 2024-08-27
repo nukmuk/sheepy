@@ -1,12 +1,12 @@
 package me.nukmuk.sheepy.renderers.packet
 
 import me.nukmuk.sheepy.*
+import me.nukmuk.sheepy.utils.PacketUtil
 import net.minecraft.network.protocol.game.ClientboundRemoveEntitiesPacket
 import net.minecraft.world.entity.EntityType
 import net.minecraft.world.phys.Vec3
 import org.bukkit.craftbukkit.CraftWorld
 import org.bukkit.craftbukkit.entity.CraftPlayer
-import java.util.*
 import kotlin.math.min
 
 class PacketEntityHandler(private val renderer: IEntityRenderer) {
@@ -26,13 +26,16 @@ class PacketEntityHandler(private val renderer: IEntityRenderer) {
             reservedEntityIds.size,
             maxParticles
         )
-        val particlesAllocatedPerAnimation = maxParticlesPerTick / frames.size
+        val entitiesAllocatedPerAnimation = maxParticlesPerTick / frames.size
 
         if (animationsLastTick != frames.size || maxParticlesLastTick != maxParticlesPerTick)
             shouldUpdateEntities = true
 
-        if (shouldUpdateEntities)
+        if (shouldUpdateEntities) {
+            shouldUpdateEntities = false
             clean(plugin)
+        }
+
 //        Utils.sendDebugMessage("aliveEntities: ${aliveEntityIndices.size}, shouldUpdateEntities: $shouldUpdateEntities, animationsLastTick: $animationsLastTick, frames: ${frames.size}")
 
 
@@ -47,7 +50,7 @@ class PacketEntityHandler(private val renderer: IEntityRenderer) {
                 frame.animationParticles.forEachIndexed pointLoop@{ pointIndex, point ->
                     if (point == null) return@pointLoop
 
-                    if (pointIndex > particlesAllocatedPerAnimation) return@pointLoop
+                    if (pointIndex > entitiesAllocatedPerAnimation) return@pointLoop
 
                     val entityIndexInReservedArray = entitiesStartIndex + pointIndex
 
@@ -59,11 +62,23 @@ class PacketEntityHandler(private val renderer: IEntityRenderer) {
                         plugin
                     )
                 }
+                val aliveEntityIndicesBelongingToThisFrame =
+                    aliveEntityIndices.filter { it >= entitiesStartIndex && it < entitiesStartIndex + entitiesAllocatedPerAnimation }
+                if (aliveEntityIndicesBelongingToThisFrame.size > frame.animationParticles.size) {
+                    val entityIndicesToRemove = aliveEntityIndicesBelongingToThisFrame.subList(
+                        frame.animationParticles.size,
+                        aliveEntityIndicesBelongingToThisFrame.size
+                    )
+                    PacketUtil.sendPacketsToAllPlayers(
+                        plugin,
+                        ClientboundRemoveEntitiesPacket(*entityIndicesToRemove.map { reservedEntityIds[it] }
+                            .toIntArray())
+                    )
+                }
             }
 
         animationsLastTick = frames.size
         maxParticlesLastTick = maxParticlesPerTick
-        shouldUpdateEntities = false
     }
 
 

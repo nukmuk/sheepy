@@ -18,7 +18,11 @@ object BlockDisplayPacketRenderer : IEntityRenderer {
     override val packetEntityHandler = PacketEntityHandler(this)
 
     override fun render(
-        point: AnimationParticle, entityIndexInReservedArray: Int, frame: Frame, maxParticles: Int, plugin: Sheepy
+        point: AnimationParticle,
+        entityIndexInReservedArray: Int,
+        frame: Frame,
+        maxParticles: Int,
+        plugin: Sheepy
     ) {
         val block = BlockColorUtil.getBlockWithColor(point.color)
 
