@@ -86,7 +86,7 @@ class Animation(
 
         val frame: Frame
 
-        if (reader.available() < 4) {
+        if (reader.available() < 14) { // length + at least 1 particle
             playing = false
             Utils.sendDebugMessage("Animation $name buffer empty")
             remove()
