@@ -61,7 +61,8 @@ object AnimationsManager {
                     sendDebugPlayersActionBar("${Config.ERROR_COLOR}previous frame still processing, animations playing: ${animations.keys} i: $i")
                     return
                 }
-                if (animations.values.filter { it.renderType != RenderType.PARTICLE }.find { it.playing } == null) {
+                if (animations.values.filter { it.renderType == RenderType.TEXT_DISPLAY_PACKET || it.renderType == RenderType.BLOCK_DISPLAY_PACKET }
+                        .find { it.playing } == null) {
                     PacketEntityHandler.cleanEntityRenderers(plugin)
                 }
                 if (animations.isEmpty()) return
@@ -96,7 +97,6 @@ object AnimationsManager {
                     return
                 }
                 val maxParticles: Int = ceil((maxParticlesPerTick.toDouble() / framesToBePlayed.size)).toInt()
-
                 RenderType.entries.forEach { type ->
                     val framesOfThisType = framesToBePlayed.filter { it.animation.renderType == type }
                     when (type) {

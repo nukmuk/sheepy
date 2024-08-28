@@ -26,75 +26,81 @@ object TextDisplayRenderer {
     fun initializeTextDisplaysEntityHandler(plugin: Sheepy) {
         var processing = false
         plugin.server.scheduler.runTaskTimer(plugin, Runnable {
+            try {
 //            Utils.sendDebugMessage("entities: ${entities.size} pointsToSpawn: ${pointsToSpawn.size}, processing $processing")
-            if (processing) {
-                Utils.sendDebugMessage("${this.javaClass.simpleName} still processing!")
-                return@Runnable
-            }
-            processing = true
-            pointsToSpawn.forEachIndexed { pointIndex, point ->
-                val world = plugin.server.worlds.first()
-                val location = Location(world, point.x.toDouble(), point.y.toDouble(), point.z.toDouble())
-                if (pointIndex >= entities.size) {
-                    // on spawn
-                    world.spawn(location, TextDisplay::class.java) { entity ->
-                        entities.add(entity)
-                        entity.isPersistent = false
-                        entity.billboard = Display.Billboard.CENTER
-                        entity.backgroundColor = point.color.setAlpha(255)
-                    }
-                }
-
-                // every frame
-                val entity = entities[pointIndex]
-                try {
-                    entity.teleport(location)
-                    val animation = point.frame.animation
-                    var scale = BlockDisplayPacketRenderer.getBlockScale(
-                        AnimationsManager.maxParticlesPerTick,
-                        point.frame,
-                        point
-                    ) * 8
-                    when (animation.textMode) {
-                        TextMode.TEXT -> {
-                            entity.text(
-                                Component.text(animation.textForTextRenderer)
-                                    .color(TextColor.color(point.color.asRGB()))
-                            )
-                            entity.backgroundColor = Color.fromARGB(0, 0, 0, 0)
-                        }
-
-                        TextMode.BACKGROUND -> {
-                            entity.backgroundColor = point.color.setAlpha(255)
-                            scale *= 5
-                        }
-                    }
-                    entity.transformation = Transformation(
-                        Vector3f(),
-                        AxisAngle4f(),
-                        Vector3f(scale, scale, scale),
-                        AxisAngle4f()
-                    )
-                } catch (e: Exception) {
-                    plugin.logger.warning("TextDisplayRenderer error: $e")
-                    processing = false
+                if (processing) {
+                    Utils.sendDebugMessage("${this.javaClass.simpleName} still processing!")
                     return@Runnable
                 }
-            }
+                processing = true
+                pointsToSpawn.forEachIndexed { pointIndex, point ->
+                    val world = plugin.server.worlds.first()
+                    val location = Location(world, point.x.toDouble(), point.y.toDouble(), point.z.toDouble())
+                    if (pointIndex >= entities.size) {
+                        // on spawn
+                        world.spawn(location, TextDisplay::class.java) { entity ->
+                            entities.add(entity)
+                            entity.isPersistent = false
+                            entity.billboard = Display.Billboard.CENTER
+                            entity.backgroundColor = point.color.setAlpha(255)
+                        }
+                    }
 
-            // remove extra leftovers from previous frame
-            if (pointsToSpawn.size < entities.size) {
-//                Utils.sendDebugMessage("removing entities, entities: ${entities.size} pointsToSpawn: ${pointsToSpawn.size}")
-                for (i in entities.size - 1 downTo pointsToSpawn.size) {
-//                    Utils.sendDebugMessage("removing entity: $i, entities: ${entities.size} pointsToSpawn: ${pointsToSpawn.size}")
-                    entities[i].remove()
-                    entities.remove(entities[i])
+                    // every frame
+                    val entity = entities[pointIndex]
+                    try {
+                        entity.teleport(location)
+                        val animation = point.frame.animation
+                        var scale = BlockDisplayPacketRenderer.getBlockScale(
+                            AnimationsManager.maxParticlesPerTick,
+                            point.frame,
+                            point
+                        ) * 8
+                        when (animation.textMode) {
+                            TextMode.TEXT -> {
+                                entity.text(
+                                    Component.text(animation.textForTextRenderer)
+                                        .color(TextColor.color(point.color.asRGB()))
+                                )
+                                entity.backgroundColor = Color.fromARGB(0, 0, 0, 0)
+                            }
+
+                            TextMode.BACKGROUND -> {
+                                entity.backgroundColor = point.color.setAlpha(255)
+                                scale *= 5
+                            }
+                        }
+                        entity.transformation = Transformation(
+                            Vector3f(),
+                            AxisAngle4f(),
+                            Vector3f(scale, scale, scale),
+                            AxisAngle4f()
+                        )
+                    } catch (e: Exception) {
+                        plugin.logger.warning("TextDisplayRenderer error: $e")
+                        processing = false
+                        return@Runnable
+                    }
                 }
-            } else {
+
+                // remove extra leftovers from previous frame
+                if (pointsToSpawn.size < entities.size) {
+//                Utils.sendDebugMessage("removing entities, entities: ${entities.size} pointsToSpawn: ${pointsToSpawn.size}")
+                    for (i in entities.size - 1 downTo pointsToSpawn.size) {
+//                    Utils.sendDebugMessage("removing entity: $i, entities: ${entities.size} pointsToSpawn: ${pointsToSpawn.size}")
+                        entities[i].remove()
+                        entities.remove(entities[i])
+                    }
+                } else {
 //                Utils.sendDebugMessage("not removing entities, entities: ${entities.size} pointsToSpawn: ${pointsToSpawn.size}")
+                }
+                pointsToSpawn.clear()
+//                processing = false
+            } catch (e: Exception) {
+                plugin.logger.warning("TextDisplayRenderer error: $e")
+            } finally {
+                processing = false
             }
-            pointsToSpawn.clear()
-            processing = false
         }, 0, 1)
     }
 

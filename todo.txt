@@ -4,15 +4,14 @@ different block palettes
 effects when walking inside animations
 config file to toggle particles "force" property, toggle with command too
 fix command aliases/usages (?)
-optimization: remove Frame from AnimationParticle
 
 add other particles, display entities
 maybe make format big endian instead
 add gzip compression
 add config and save repeating animations
-per player packets
 
 done:
+-if animation is 1 frame, hold it in memory?
 -explore other text properties like bg and bg color
 -custom text
 -block and text scale
@@ -28,3 +27,7 @@ done:
 -clean entity animations when changing gmax
 -each animation/frame gets its own portion of the max entities, for example, 3 animations, each gets 1/3
 -make block display work with move packets, (color is only set once per entity?)
+
+not needed:
+optimization: remove Frame from AnimationParticle
+per player packets

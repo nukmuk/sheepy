@@ -29,7 +29,6 @@ class Animation(
 
     var playing = false
 
-
     var particleScale = 1.0f
     var animationScale = 1.0f
     var animationRotationY = 0.0f
@@ -43,6 +42,8 @@ class Animation(
     var textForTextRenderer = name[0].toString()
     var textMode = TextMode.BACKGROUND
     var randomRotationMode = RandomRotation.YAW
+
+    var singleFrame: Frame? = null
 
     fun start() {
         playing = true
@@ -65,6 +66,7 @@ class Animation(
 
     fun seekToStart() {
         reader.position(0)
+        i = 0
     }
 
     fun readerIsAtFileEnd(): Boolean {
@@ -72,61 +74,76 @@ class Animation(
     }
 
     fun getNextFrame(worldLocationOffset: Vector3f): Frame? {
+        if (singleFrame != null) return singleFrame
+        var shouldSaveSingleFrame = false
 
-        if (readerIsAtFileEnd()) {
-            if (repeat) {
-                seekToStart()
-            } else {
+        try {
+            if (readerIsAtFileEnd()) {
+                if (repeat) {
+                    Utils.sendDebugMessage("ended: $name i: $i")
+                    if (i == 1) {
+                        Utils.sendDebugMessage("single frame detected")
+                        shouldSaveSingleFrame = true
+                    }
+                    seekToStart()
+                } else {
+                    remove()
+                    Bukkit.getLogger().info("Animation $name ended, returning null as frame")
+                    return null
+                }
+            }
+
+
+            val frame: Frame
+
+            if (reader.available() < 14) { // length + at least 1 particle
+                playing = false
+                Utils.sendDebugMessage("Animation $name buffer empty")
                 remove()
-                Bukkit.getLogger().info("Animation $name ended, returning null as frame")
                 return null
             }
-        }
 
+            val length = getShort().toInt()
 
-        val frame: Frame
+            if (length < 0) {
+                Bukkit.getLogger().warning("Invalid frame length: $length in animation $name")
+                return null
+            }
 
-        if (reader.available() < 14) { // length + at least 1 particle
-            playing = false
-            Utils.sendDebugMessage("Animation $name buffer empty")
-            remove()
+            frame = Frame(
+                arrayOfNulls<AnimationParticle>(length),
+                this
+            )
+
+            // loop over particles and add them to frame
+            for (i in 0 until length) {
+                val position = Vector3f(
+                    getPosComponent() * animationScale,
+                    getPosComponent() * animationScale,
+                    getPosComponent() * animationScale
+                )
+                position.rotateY(animationRotationY)
+                position.rotateX(animationRotationX)
+                position.rotateZ(animationRotationZ)
+                position.add(worldLocationOffset)
+                frame.animationParticles[i] = AnimationParticle(
+                    x = position.x,
+                    y = position.y,
+                    z = position.z,
+                    color = Color.fromARGB(getInt()),
+                    frame
+                )
+            }
+
+            i++
+
+            if (shouldSaveSingleFrame) singleFrame = frame
+
+            return frame
+        } catch (e: Exception) {
+            Utils.sendDebugMessage("Error reading $name, i: $i, error: $e")
             return null
         }
-
-        val length = getShort().toInt()
-
-        if (length < 0) {
-            Bukkit.getLogger().warning("Invalid frame length: $length in animation $name")
-            return null
-        }
-
-        frame = Frame(
-            arrayOfNulls<AnimationParticle>(length),
-            this
-        )
-
-        // loop over particles and add them to frame
-        for (i in 0 until length) {
-            val position = Vector3f(
-                getPosComponent() * animationScale,
-                getPosComponent() * animationScale,
-                getPosComponent() * animationScale
-            )
-            position.rotateY(animationRotationY)
-            position.rotateX(animationRotationX)
-            position.rotateZ(animationRotationZ)
-            position.add(worldLocationOffset)
-            frame.animationParticles[i] = AnimationParticle(
-                x = position.x,
-                y = position.y,
-                z = position.z,
-                color = Color.fromARGB(getInt()),
-                frame
-            )
-        }
-
-        i++
-        return frame
     }
 
     private fun getPosComponent(): Float {
