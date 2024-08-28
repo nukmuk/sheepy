@@ -111,7 +111,7 @@ object TextDisplayRenderer {
             frames.forEach { frame ->
                 frame.animationParticles.forEachIndexed { pointIndex, point ->
                     if (point == null) return@forEachIndexed
-                    if (pointIndex < maxParticles) {
+                    if (pointIndex < maxParticles || maxParticles == 0) {
                         pointsToSpawn.add(point)
                     }
                 }

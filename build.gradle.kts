@@ -50,6 +50,6 @@ tasks.processResources {
 tasks.withType<ShadowJar> {
     relocate("dev.jorel.commandapi", "$group.commandapi")
 //    minimize()
-    archiveFileName.set("sheepy.jar")
+    archiveFileName.set("Sheepy.jar")
     destinationDirectory.set(file("F:/Servers/dev/plugins"))
 }

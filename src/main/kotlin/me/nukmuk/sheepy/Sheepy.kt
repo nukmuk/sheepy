@@ -16,9 +16,8 @@ class Sheepy : JavaPlugin() {
     }
 
     override fun onEnable() {
-        // Plugin startup logic
         CommandAPI.onEnable()
-//        getCommand("sheepy")?.setExecutor(LegacySheepyCommand(this))
+        saveResource("config.yml", false)
 //        getCommand("misc")?.setExecutor(MiscCommand(this))
         AnimationsManager.initialize(this)
         SheepyCommand(this).register()
@@ -29,7 +28,6 @@ class Sheepy : JavaPlugin() {
     }
 
     override fun onDisable() {
-        // Plugin shutdown logic
         AnimationsManager.clearAnimations()
         CommandAPI.onDisable()
     }

@@ -16,6 +16,7 @@ class SheepyCommand(private val plugin: Sheepy) {
         commandAPICommand("sheepy") {
             withAliases("sh")
             withPermission("sheepy.use")
+            withUsage("/sh create <name>")
             subcommand(files)
             subcommand(create)
             subcommand(remove)
@@ -34,6 +35,7 @@ class SheepyCommand(private val plugin: Sheepy) {
             subcommand(text)
             subcommand(textmode)
             subcommand(textrotationmode)
+            subcommand(reload)
 
             subcommand(TestCommand(plugin).test)
 
@@ -605,6 +607,12 @@ class SheepyCommand(private val plugin: Sheepy) {
                 sender,
                 "Set animation ${Config.VAR_COLOR}${animation.name} ${Config.PRIMARY_COLOR}text random rotation mode to ${Config.VAR_COLOR}${animation.randomRotationMode}"
             )
+        }
+    }
+    private val reload = subcommand("reload") {
+        anyExecutor { sender, args ->
+            plugin.reloadConfig()
+            Utils.sendMessage(sender, "Config reloaded")
         }
     }
 

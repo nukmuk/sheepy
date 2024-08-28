@@ -5,6 +5,7 @@ import me.nukmuk.sheepy.renderers.ParticleRenderer
 import me.nukmuk.sheepy.renderers.packet.BlockDisplayPacketRenderer
 import me.nukmuk.sheepy.renderers.packet.TextDisplayPacketRenderer
 import me.nukmuk.sheepy.renderers.TextDisplayRenderer
+import me.nukmuk.sheepy.utils.ConfigUtil
 import me.nukmuk.sheepy.utils.Utils
 import org.bukkit.Location
 import org.bukkit.scheduler.BukkitRunnable
@@ -20,7 +21,15 @@ object AnimationsManager {
     private lateinit var task: BukkitTask
     val debugPlayers = HashSet<UUID>()
 
-    var maxParticlesPerTick = 2000
+    var maxParticlesPerTick: Int = 1000
+        set(value) {
+            field = value
+            plugin.config.set("max-particles-per-tick", value)
+            ConfigUtil.save(plugin)
+        }
+        get() {
+            return plugin.config.getInt("max-particles-per-tick")
+        }
 
     private var _animsInFolder = listOf<File>()
     val animsInFolder: List<File>
@@ -52,6 +61,7 @@ object AnimationsManager {
 
     fun initialize(plugin: Sheepy) {
         this.plugin = plugin
+        maxParticlesPerTick = plugin.config.getInt("max-particles-per-tick", 1000)
         plugin.server.onlinePlayers.filter { it.isOp }.forEach { debugPlayers.add(it.uniqueId) }
         task = object : BukkitRunnable() {
             var processing = false
@@ -100,7 +110,7 @@ object AnimationsManager {
                 RenderType.entries.forEach { type ->
                     val framesOfThisType = framesToBePlayed.filter { it.animation.renderType == type }
                     when (type) {
-                        RenderType.PARTICLE -> ParticleRenderer.playFrames(framesOfThisType, maxParticles)
+                        RenderType.PARTICLE -> ParticleRenderer.playFrames(framesOfThisType, maxParticles, plugin)
                         RenderType.BLOCK_DISPLAY_PACKET -> BlockDisplayPacketRenderer.playFrames(
                             framesOfThisType,
                             maxParticles,

@@ -1,14 +1,15 @@
 package me.nukmuk.sheepy.renderers
 
 import me.nukmuk.sheepy.Frame
+import me.nukmuk.sheepy.Sheepy
 import org.bukkit.Particle
 
 object ParticleRenderer {
-    fun playFrames(frames: List<Frame>, maxParticles: Int) {
-        frames.forEach { playFrame(it, maxParticles) }
+    fun playFrames(frames: List<Frame>, maxParticles: Int, plugin: Sheepy) {
+        frames.forEach { playFrame(it, maxParticles, plugin) }
     }
 
-    fun playFrame(frame: Frame, maxParticles: Int) {
+    fun playFrame(frame: Frame, maxParticles: Int, plugin: Sheepy) {
         val total = frame.animationParticles.size
         val particleScale = frame.animation.particleScale
 
@@ -30,7 +31,7 @@ object ParticleRenderer {
                 0.0,
                 0.0,
                 Particle.DustOptions(p.color, p.scale.toFloat() / 255 * particleScale * scaleMultiplier * 5),
-                true
+                plugin.config.getBoolean("increased-particle-render-distance")
             )
         }
     }
