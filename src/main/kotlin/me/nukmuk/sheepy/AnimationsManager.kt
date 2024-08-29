@@ -1,11 +1,12 @@
 package me.nukmuk.sheepy
 
-import me.nukmuk.sheepy.renderers.packet.PacketEntityHandler
 import me.nukmuk.sheepy.renderers.ParticleRenderer
-import me.nukmuk.sheepy.renderers.packet.BlockDisplayPacketRenderer
-import me.nukmuk.sheepy.renderers.packet.TextDisplayPacketRenderer
 import me.nukmuk.sheepy.renderers.TextDisplayRenderer
+import me.nukmuk.sheepy.renderers.packet.BlockDisplayPacketRenderer
+import me.nukmuk.sheepy.renderers.packet.PacketEntityHandler
+import me.nukmuk.sheepy.renderers.packet.TextDisplayPacketRenderer
 import me.nukmuk.sheepy.utils.ConfigUtil
+import me.nukmuk.sheepy.utils.RepeatAnimationsConfigUtil
 import me.nukmuk.sheepy.utils.Utils
 import org.bukkit.Location
 import org.bukkit.scheduler.BukkitRunnable
@@ -17,7 +18,7 @@ import kotlin.math.ceil
 
 object AnimationsManager {
     val animations = HashMap<String, Animation>()
-    private lateinit var plugin: Sheepy
+    private val plugin = Sheepy.instance
     private lateinit var task: BukkitTask
     val debugPlayers = HashSet<UUID>()
 
@@ -39,9 +40,13 @@ object AnimationsManager {
         return animations.keys
     }
 
-    fun createAnimation(name: String, file: File, location: Location): Animation {
-        val animation = Animation(name, file, null, location)
+    fun createAnimation(name: String, file: File, location: Location, repeat: Boolean): Animation {
+        val animation = Animation(name, file, null, location, repeat)
         animations.put(name, animation)
+        if (animation.repeat) {
+            RepeatAnimationsConfigUtil.saveAnimation(animation)
+        }
+
         return animation
     }
 
@@ -52,7 +57,7 @@ object AnimationsManager {
     }
 
     fun clearAnimations() {
-        animations.values.forEach { it.shouldBeDeleted = true }
+        animations.values.forEach { it.remove() }
 //        plugin.server.scheduler.runTaskLater(plugin, Runnable {
 //            Utils.sendDebugMessage("clearing animations...")
 //            EntityRenderer.sendRemoveAllEntitiesPacket(plugin)
@@ -60,9 +65,9 @@ object AnimationsManager {
     }
 
     fun initialize(plugin: Sheepy) {
-        this.plugin = plugin
         maxParticlesPerTick = plugin.config.getInt("max-particles-per-tick", 1000)
         plugin.server.onlinePlayers.filter { it.isOp }.forEach { debugPlayers.add(it.uniqueId) }
+        RepeatAnimationsConfigUtil.loadAllAnimations()
         task = object : BukkitRunnable() {
             var processing = false
             var i = 0
@@ -91,6 +96,7 @@ object AnimationsManager {
                     )
                     if (frame == null) {
                         plugin.logger.info("${animation.name} frame null after getNextFrame")
+                        animation.removeWithoutRemovingFromConfig()
                         continue
                     }
                     framesToBePlayed.add(frame)

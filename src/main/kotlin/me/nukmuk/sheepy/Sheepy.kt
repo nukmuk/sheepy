@@ -16,8 +16,10 @@ class Sheepy : JavaPlugin() {
     }
 
     override fun onEnable() {
+        instance = this
         CommandAPI.onEnable()
         saveResource("config.yml", false)
+//        saveResource("repeat-animations.yml", false)
 //        getCommand("misc")?.setExecutor(MiscCommand(this))
         AnimationsManager.initialize(this)
         SheepyCommand(this).register()
@@ -31,4 +33,13 @@ class Sheepy : JavaPlugin() {
         AnimationsManager.clearAnimations()
         CommandAPI.onDisable()
     }
+
+    companion object {
+        // already using dependency injection, so maybe bad idea ?
+        lateinit var instance: Sheepy
+    }
+}
+
+fun l(string: String) {
+    Sheepy.instance.logger.info(string)
 }

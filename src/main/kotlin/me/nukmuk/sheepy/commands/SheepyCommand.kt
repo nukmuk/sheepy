@@ -42,6 +42,7 @@ class SheepyCommand(private val plugin: Sheepy) {
             anyExecutor { sender, args ->
                 sender.sendMessage(
                     Utils.mm.deserialize(
+                        @Suppress("DEPRECATION")
                         "<dark_gray><st>        <reset> ${Config.PLUGIN_NAME_COLORS} <gray>${plugin.description.version} <dark_gray><st>        <reset>\n" +
                                 "<reset>${Config.VAR_COLOR}To get started:\n" +
                                 "${Config.VAR_COLOR}- ${Config.PRIMARY_COLOR}/sh create ${Config.VAR_COLOR}<animation>\n" +
@@ -88,7 +89,7 @@ class SheepyCommand(private val plugin: Sheepy) {
             val animationName = (args["animationName"] ?: fileName) as String
             val repeat = (args["repeat"] ?: false) as Boolean
             val scale = (args["scale"]) as? Float
-            val renderType = RenderType.entries.find { it.name == args["renderType"] }
+            val renderType = parseRenderType(args["renderType"] as String?)
 
             if (AnimationsManager.animationNames().contains(animationName)) {
                 Utils.sendMessage(
@@ -123,9 +124,8 @@ class SheepyCommand(private val plugin: Sheepy) {
                 animationName,
                 file,
                 targetLocation,
+                repeat
             )
-
-            animation.repeat = repeat
 
             if (scale != null) {
                 animation.animationScale = scale
@@ -411,11 +411,10 @@ class SheepyCommand(private val plugin: Sheepy) {
             if (newRotationY == null) {
                 Utils.sendMessage(
                     sender,
-                    "Current animation rotation: Y: ${Config.VAR_COLOR}${Utils.toDegrees(animation.animationRotationY)}° X: ${Config.VAR_COLOR}${
-                        Utils.toDegrees(
-                            animation.animationRotationY
-                        )
-                    }° Z: ${Config.VAR_COLOR}${Utils.toDegrees(animation.animationRotationY)}°" //todo colors
+                    "Animation ${Config.VAR_COLOR}${animation.name} ${Config.PRIMARY_COLOR}current rotation: " +
+                            "Y: ${Config.VAR_COLOR}${Utils.toDegrees(animation.animationRotationY)}° " +
+                            "${Config.PRIMARY_COLOR}X: ${Config.VAR_COLOR}${Utils.toDegrees(animation.animationRotationY)}° " +
+                            "${Config.PRIMARY_COLOR}Z: ${Config.VAR_COLOR}${Utils.toDegrees(animation.animationRotationY)}°"
                 )
                 return@anyExecutor
             }
@@ -427,7 +426,10 @@ class SheepyCommand(private val plugin: Sheepy) {
 
             Utils.sendMessage(
                 sender,
-                "Set animation rotation to Y: ${Config.VAR_COLOR}${newRotationY}° X: ${Config.VAR_COLOR}${newRotationY}° Z: ${Config.VAR_COLOR}${newRotationY}° ${Config.PRIMARY_COLOR}for ${Config.VAR_COLOR}${animation.name}"
+                "Set animation ${Config.VAR_COLOR}${animation.name} ${Config.PRIMARY_COLOR}rotation to " +
+                        "Y: ${Config.VAR_COLOR}${newRotationY}° " +
+                        "${Config.PRIMARY_COLOR}X: ${Config.VAR_COLOR}${newRotationX}° " +
+                        "${Config.PRIMARY_COLOR}Z: ${Config.VAR_COLOR}${newRotationZ}°"
             )
         }
     }
@@ -441,7 +443,7 @@ class SheepyCommand(private val plugin: Sheepy) {
         )
         anyExecutor { sender, args ->
             val animationName = args["animationName"] as String
-            val newRenderType = RenderType.entries.find { it.name == args["renderType"] }
+            val newRenderType = parseRenderType(args["renderType"] as String?)
             val animation = AnimationsManager.getAnimation(animationName)
 
             if (animation == null) {
@@ -545,7 +547,7 @@ class SheepyCommand(private val plugin: Sheepy) {
         )
         anyExecutor { sender, args ->
             val animationName = args["animationName"] as String
-            val newTextMode = TextMode.entries.find { it.name == args["textMode"] }
+            val newTextMode = parseTextMode(args["textMode"] as String?)
             val animation = AnimationsManager.getAnimation(animationName)
 
             if (animation == null) {

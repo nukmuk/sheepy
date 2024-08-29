@@ -5,12 +5,14 @@ effects when walking inside animations
 config file to toggle particles "force" property, toggle with command too
 fix command aliases/usages (?)
 
-add other particles, display entities
+add other particles
 maybe make format big endian instead
 add gzip compression
-add config and save repeating animations
+blockdisplay renderer without nms (?)
 
 done:
+-add display entities
+-add config and save repeating animations
 -if animation is 1 frame, hold it in memory?
 -explore other text properties like bg and bg color
 -custom text

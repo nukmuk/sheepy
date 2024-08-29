@@ -1,8 +1,8 @@
 package me.nukmuk.sheepy
 
 import it.unimi.dsi.fastutil.io.FastBufferedInputStream
+import me.nukmuk.sheepy.utils.RepeatAnimationsConfigUtil
 import me.nukmuk.sheepy.utils.Utils
-import org.bukkit.Bukkit
 import org.bukkit.Color
 import org.bukkit.Location
 import org.bukkit.World
@@ -15,15 +15,16 @@ import java.nio.ByteOrder
 
 class Animation(
     val name: String,
-    file: File,
+    val file: File,
     private val player: Player?,
     var location: Location,
+    val repeat: Boolean
 ) {
 
     val world: World
         get() = location.world
 
-    private val reader = FastBufferedInputStream(FileInputStream(file))
+    private val reader = FastBufferedInputStream(FileInputStream(file), 1024 * 64)
 
     private var i = 0
 
@@ -34,7 +35,6 @@ class Animation(
     var animationRotationY = 0.0f
     var animationRotationX = 0.0f
     var animationRotationZ = 0.0f
-    var repeat = false
     var renderType: RenderType? = RenderType.PARTICLE
 
     var shouldBeDeleted = false
@@ -58,10 +58,14 @@ class Animation(
         player?.let { Utils.sendMessage(it, "removing animation $name") }
         playing = false
         shouldBeDeleted = true
+        RepeatAnimationsConfigUtil.remove(name)
     }
 
-    fun stepFrame() {
-        Utils.sendMessage(player!!, "not implemented")
+    fun removeWithoutRemovingFromConfig() {
+        player?.let { Utils.sendMessage(it, "removing animation $name") }
+        playing = false
+        shouldBeDeleted = true
+
     }
 
     fun seekToStart() {
@@ -88,7 +92,7 @@ class Animation(
                     seekToStart()
                 } else {
                     remove()
-                    Bukkit.getLogger().info("Animation $name ended, returning null as frame")
+                    l("Animation $name ended, returning null as frame")
                     return null
                 }
             }
@@ -106,7 +110,7 @@ class Animation(
             val length = getShort().toInt()
 
             if (length < 0) {
-                Bukkit.getLogger().warning("Invalid frame length: $length in animation $name")
+                Sheepy.instance.logger.warning("Invalid frame length: $length in animation $name")
                 return null
             }
 

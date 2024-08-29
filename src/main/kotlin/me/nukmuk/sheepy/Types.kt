@@ -22,13 +22,21 @@ enum class RenderType {
     TEXT_DISPLAY
 }
 
+fun parseRenderType(string: String?): RenderType? = RenderType.entries.find { it.name == string }
+
 enum class TextMode {
     BACKGROUND,
     TEXT
 }
+
+fun parseTextMode(string: String?): TextMode? = TextMode.entries.find { it.name == string }
+
 
 enum class RandomRotation {
     NONE,
     YAW,
     FULL
 }
+
+fun parseRandomRotation(string: String?): RandomRotation? = RandomRotation.entries.find { it.name == string }
+// todo generic enum parser
