@@ -16,7 +16,7 @@ class SheepyCommand(private val plugin: Sheepy) {
         commandAPICommand("sheepy") {
             withAliases("sh")
             withPermission("sheepy.use")
-            withUsage("/sh create <name>")
+//            withUsage("/sh create <name>")
             subcommand(files)
             subcommand(create)
             subcommand(remove)
@@ -61,12 +61,12 @@ class SheepyCommand(private val plugin: Sheepy) {
             val files = AnimationsManager.getAnimsInFolder(plugin)
             Utils.sendMessage(
                 sender,
-                if (!files.isEmpty()) files.joinToString("<gray>, ${Config.PRIMARY_COLOR}") { file -> file.name } else "Folder empty")
+                if (!files.isEmpty()) "All animations: ${Config.VAR_COLOR}" + files.joinToString("${Config.PRIMARY_COLOR}, ${Config.VAR_COLOR}") { file -> file.name } else "Folder empty")
         }
     }
 
     private val create = subcommand("create") {
-        withAliases("c", "st")
+//        withAliases("c", "st")
 
         stringArgument("fileName") {
             replaceSuggestions(ArgumentSuggestions.strings {
@@ -144,7 +144,7 @@ class SheepyCommand(private val plugin: Sheepy) {
     }
 
     private val remove = subcommand("remove") {
-        withAliases("rm")
+//        withAliases("rm")
         stringArgument("animationName") {
             replaceSuggestions(currentAnimationsSuggestion())
         }
@@ -172,7 +172,7 @@ class SheepyCommand(private val plugin: Sheepy) {
     }
 
     private val pause = subcommand("pause") {
-        withAliases("stop")
+//        withAliases("stop")
         stringArgument("animationName") {
             replaceSuggestions(currentAnimationsSuggestion())
         }
@@ -191,7 +191,7 @@ class SheepyCommand(private val plugin: Sheepy) {
         }
     }
     private val resume = subcommand("resume") {
-        withAliases("start")
+//        withAliases("start")
         stringArgument("animationName") {
             replaceSuggestions(currentAnimationsSuggestion())
         }
@@ -211,14 +211,14 @@ class SheepyCommand(private val plugin: Sheepy) {
     }
 
     private val list = subcommand("list") {
-        withAliases("ls")
+//        withAliases("ls")
         anyExecutor { sender, args ->
             Utils.sendMessage(sender, "Animations: ${Config.VAR_COLOR}${AnimationsManager.animationNames()}")
         }
     }
 
-    private val globalMaxParticlesPerTick = subcommand("globalmax") {
-        withAliases("gmax", "max")
+    private val globalMaxParticlesPerTick = subcommand("maxparticles") {
+//        withAliases("gmax", "globalmax")
         integerArgument("amount", optional = true, min = 0, max = 16384) {
             replaceSuggestions(ArgumentSuggestions.strings {
                 arrayOf(AnimationsManager.maxParticlesPerTick.toString())
@@ -245,7 +245,7 @@ class SheepyCommand(private val plugin: Sheepy) {
     }
 
     private val particleScale = subcommand("particlescale") {
-        withAliases("pscale")
+//        withAliases("pscale")
         stringArgument("animationName") {
             replaceSuggestions(currentAnimationsSuggestion())
         }
@@ -282,7 +282,7 @@ class SheepyCommand(private val plugin: Sheepy) {
     }
 
     private val animationScale = subcommand("animationscale") {
-        withAliases("ascale")
+//        withAliases("ascale")
         stringArgument("animationName") {
             replaceSuggestions(currentAnimationsSuggestion())
         }
@@ -427,9 +427,9 @@ class SheepyCommand(private val plugin: Sheepy) {
             Utils.sendMessage(
                 sender,
                 "Set animation ${Config.VAR_COLOR}${animation.name} ${Config.PRIMARY_COLOR}rotation to " +
-                        "Y: ${Config.VAR_COLOR}${newRotationY}° " +
-                        "${Config.PRIMARY_COLOR}X: ${Config.VAR_COLOR}${newRotationX}° " +
-                        "${Config.PRIMARY_COLOR}Z: ${Config.VAR_COLOR}${newRotationZ}°"
+                        "Y: ${Config.VAR_COLOR}${animation.animationRotationY}° " +
+                        "${Config.PRIMARY_COLOR}X: ${Config.VAR_COLOR}${animation.animationRotationX}° " +
+                        "${Config.PRIMARY_COLOR}Z: ${Config.VAR_COLOR}${animation.animationRotationZ}°"
             )
         }
     }

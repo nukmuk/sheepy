@@ -90,7 +90,7 @@ class Animation(
             updateIfRepeating("randomRotationMode", value)
         }
 
-    var singleFrame: Frame? = null
+//    var singleFrame: Frame? = null
 
     fun start() {
         playing = true
@@ -125,8 +125,8 @@ class Animation(
     }
 
     fun getNextFrame(worldLocationOffset: Vector3f): Frame? {
-        if (singleFrame != null) return singleFrame
-        var shouldSaveSingleFrame = false
+//        if (singleFrame != null) return singleFrame
+//        var shouldSaveSingleFrame = false
 
         try {
             if (readerIsAtFileEnd()) {
@@ -134,7 +134,7 @@ class Animation(
                     Utils.sendDebugMessage("ended: $name i: $i")
                     if (i == 1) {
                         Utils.sendDebugMessage("single frame detected")
-                        shouldSaveSingleFrame = true
+//                        shouldSaveSingleFrame = true
                     }
                     seekToStart()
                 } else {
@@ -188,7 +188,7 @@ class Animation(
 
             i++
 
-            if (shouldSaveSingleFrame) singleFrame = frame
+//            if (shouldSaveSingleFrame) singleFrame = frame
 
             return frame
         } catch (e: Exception) {

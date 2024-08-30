@@ -1,9 +1,10 @@
 next:
+leave displayentities in world command
+configurable view distance for entities
 refactor: all commands into their own files
 different block palettes
 effects when walking inside animations
 config file to toggle particles "force" property, toggle with command too
-fix command aliases/usages (?)
 
 add other particles
 maybe make format big endian instead
@@ -11,6 +12,7 @@ add gzip compression
 blockdisplay renderer without nms (?)
 
 done:
+-fix command aliases/usages (?), maybe not possible, fix: remove all aliases :(
 -add display entities
 -add config and save repeating animations
 -if animation is 1 frame, hold it in memory?

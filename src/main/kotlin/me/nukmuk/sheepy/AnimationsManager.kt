@@ -66,7 +66,7 @@ object AnimationsManager {
 
     fun initialize(plugin: Sheepy) {
         maxParticlesPerTick = plugin.config.getInt("max-particles-per-tick", 1000)
-        plugin.server.onlinePlayers.filter { it.isOp }.forEach { debugPlayers.add(it.uniqueId) }
+//        plugin.server.onlinePlayers.filter { it.isOp }.forEach { debugPlayers.add(it.uniqueId) }
         RepeatAnimationsConfigUtil.loadAllAnimations()
         task = object : BukkitRunnable() {
             var processing = false
