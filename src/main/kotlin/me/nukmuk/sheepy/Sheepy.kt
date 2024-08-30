@@ -19,7 +19,6 @@ class Sheepy : JavaPlugin() {
         instance = this
         CommandAPI.onEnable()
         saveResource("config.yml", false)
-//        saveResource("repeat-animations.yml", false)
 //        getCommand("misc")?.setExecutor(MiscCommand(this))
         AnimationsManager.initialize(this)
         SheepyCommand(this).register()

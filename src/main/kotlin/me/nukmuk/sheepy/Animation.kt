@@ -17,12 +17,22 @@ class Animation(
     val name: String,
     val file: File,
     private val player: Player?,
-    var location: Location,
+    location: Location,
     val repeat: Boolean
 ) {
 
+    var location = location
+        set(value) {
+            value.pitch = 0f
+            value.yaw = 0f
+            field = value
+            updateIfRepeating("location", value)
+        }
+
+
     val world: World
         get() = location.world
+
 
     private val reader = FastBufferedInputStream(FileInputStream(file), 1024 * 64)
 
@@ -31,17 +41,54 @@ class Animation(
     var playing = false
 
     var particleScale = 1.0f
+        set(value) {
+            field = value
+            updateIfRepeating("particlescale", value)
+        }
+
     var animationScale = 1.0f
+        set(value) {
+            field = value
+            updateIfRepeating("animationscale", value)
+        }
     var animationRotationY = 0.0f
+        set(value) {
+            field = value
+            updateIfRepeating("rotationY", value)
+        }
     var animationRotationX = 0.0f
+        set(value) {
+            field = value
+            updateIfRepeating("rotationX", value)
+        }
     var animationRotationZ = 0.0f
+        set(value) {
+            field = value
+            updateIfRepeating("rotationZ", value)
+        }
     var renderType: RenderType? = RenderType.PARTICLE
+        set(value) {
+            field = value
+            updateIfRepeating("rendertype", value)
+        }
 
     var shouldBeDeleted = false
 
     var textForTextRenderer = name[0].toString()
+        set(value) {
+            field = value
+            updateIfRepeating("textForTextRenderer", value)
+        }
     var textMode = TextMode.BACKGROUND
+        set(value) {
+            field = value
+            updateIfRepeating("textMode", value)
+        }
     var randomRotationMode = RandomRotation.YAW
+        set(value) {
+            field = value
+            updateIfRepeating("randomRotationMode", value)
+        }
 
     var singleFrame: Frame? = null
 
@@ -145,7 +192,7 @@ class Animation(
 
             return frame
         } catch (e: Exception) {
-            Utils.sendDebugMessage("Error reading $name, i: $i, error: $e")
+            Sheepy.instance.logger.warning("Error reading $name, i: $i, error: $e")
             return null
         }
     }
@@ -162,5 +209,15 @@ class Animation(
 
     private fun getInt(): Int {
         return ByteBuffer.wrap(reader.readNBytes(4)).order(ByteOrder.LITTLE_ENDIAN).getInt()
+    }
+
+    private fun updateIfRepeating(property: String, value: Any?) {
+        var value: Any? = value
+        when (value) {
+            is RenderType, is TextMode, is RandomRotation -> value = value.toString()
+        }
+
+        if (repeat)
+            RepeatAnimationsConfigUtil.updateValueIfRepeating("$name.$property", value)
     }
 }

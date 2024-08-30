@@ -25,6 +25,11 @@ object RepeatAnimationsConfigUtil {
         })
     }
 
+    fun updateValueIfRepeating(path: String, value: Any?) {
+        set(path, value)
+        save()
+    }
+
     fun saveAnimation(animation: Animation) {
         set("${animation.name}.file", animation.file.name)
         set("${animation.name}.location", animation.location)
@@ -40,6 +45,7 @@ object RepeatAnimationsConfigUtil {
         set("${animation.name}.randomRotationMode", animation.randomRotationMode.toString())
         save()
     }
+
 
     fun loadAnimation(name: String) {
         try {
