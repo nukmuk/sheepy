@@ -86,6 +86,7 @@ object AnimationsManager {
                 val animationIterator = animations.values.iterator()
                 while (animationIterator.hasNext()) {
                     val animation = animationIterator.next()
+                    if (animation.shouldBeLeftInWorld != ShouldBeLeftInWorld.NO) animation.remove()
                     if (animation.shouldBeDeleted) animationIterator.remove()
                     if (!animation.playing) continue
                     val frame = animation.getNextFrame(

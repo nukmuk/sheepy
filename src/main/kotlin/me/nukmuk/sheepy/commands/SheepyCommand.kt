@@ -36,6 +36,7 @@ class SheepyCommand(private val plugin: Sheepy) {
             subcommand(textmode)
             subcommand(textrotationmode)
             subcommand(reload)
+            subcommand(leaveentitiesinworld)
 
             subcommand(TestCommand(plugin).test)
 
@@ -427,9 +428,9 @@ class SheepyCommand(private val plugin: Sheepy) {
             Utils.sendMessage(
                 sender,
                 "Set animation ${Config.VAR_COLOR}${animation.name} ${Config.PRIMARY_COLOR}rotation to " +
-                        "Y: ${Config.VAR_COLOR}${animation.animationRotationY}° " +
-                        "${Config.PRIMARY_COLOR}X: ${Config.VAR_COLOR}${animation.animationRotationX}° " +
-                        "${Config.PRIMARY_COLOR}Z: ${Config.VAR_COLOR}${animation.animationRotationZ}°"
+                        "Y: ${Config.VAR_COLOR}${Utils.toDegrees(animation.animationRotationY)}° " +
+                        "${Config.PRIMARY_COLOR}X: ${Config.VAR_COLOR}${Utils.toDegrees(animation.animationRotationX)}° " +
+                        "${Config.PRIMARY_COLOR}Z: ${Config.VAR_COLOR}${Utils.toDegrees(animation.animationRotationZ)}°"
             )
         }
     }
@@ -615,6 +616,48 @@ class SheepyCommand(private val plugin: Sheepy) {
         anyExecutor { sender, args ->
             plugin.reloadConfig()
             Utils.sendMessage(sender, "Config reloaded")
+        }
+    }
+
+    private val leaveentitiesinworld = subcommand("leaveentitiesinworld") {
+        stringArgument("animationName") {
+            replaceSuggestions(ArgumentSuggestions.strings {
+                AnimationsManager.animations.filter { it.value.renderType == RenderType.TEXT_DISPLAY }.map { it.key }
+                    .toTypedArray()
+            })
+        }
+        booleanArgument(
+            "makePersistent",
+            optional = true
+        )
+        anyExecutor { sender, args ->
+            val animationName = args["animationName"] as String
+            val makePersistent = (args["makePersistent"] ?: false) as Boolean
+            val animation = AnimationsManager.getAnimation(animationName)
+
+
+            if (animation == null) {
+                Utils.sendMessage(sender, "No animation ${Config.VAR_COLOR}${animationName}")
+                return@anyExecutor
+            }
+
+            if (animation.renderType != RenderType.TEXT_DISPLAY) {
+                Utils.sendMessage(
+                    sender,
+                    "Animation ${Config.VAR_COLOR}${animationName} ${Config.PRIMARY_COLOR}doesn't have render type ${Config.VAR_COLOR}${RenderType.TEXT_DISPLAY}"
+                )
+                return@anyExecutor
+            }
+
+            animation.shouldBeLeftInWorld =
+                if (makePersistent) ShouldBeLeftInWorld.YES_AND_MAKE_PERSISTENT else ShouldBeLeftInWorld.YES
+
+            plugin.logger.info("Leaving ${animation.name} entities in world")
+            PacketEntityHandler.cleanEntityRenderers(plugin)
+            Utils.sendMessage(
+                sender,
+                "Left animation ${Config.VAR_COLOR}${animation.name} ${Config.PRIMARY_COLOR}entities in the world, with persistence set to ${Config.VAR_COLOR}$makePersistent"
+            )
         }
     }
 

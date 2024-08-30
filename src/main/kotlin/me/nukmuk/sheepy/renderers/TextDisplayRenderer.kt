@@ -4,6 +4,7 @@ import me.nukmuk.sheepy.AnimationParticle
 import me.nukmuk.sheepy.AnimationsManager
 import me.nukmuk.sheepy.Frame
 import me.nukmuk.sheepy.Sheepy
+import me.nukmuk.sheepy.ShouldBeLeftInWorld
 import me.nukmuk.sheepy.TextMode
 import me.nukmuk.sheepy.renderers.packet.BlockDisplayPacketRenderer
 import me.nukmuk.sheepy.utils.Utils
@@ -27,20 +28,27 @@ object TextDisplayRenderer {
         var processing = false
         plugin.server.scheduler.runTaskTimer(plugin, Runnable {
             try {
-//            Utils.sendDebugMessage("entities: ${entities.size} pointsToSpawn: ${pointsToSpawn.size}, processing $processing")
+//                Utils.sendDebugMessage("entities: ${entities.size} pointsToSpawn: ${pointsToSpawn.size}, processing $processing")
                 if (processing) {
                     Utils.sendDebugMessage("${this.javaClass.simpleName} still processing!")
                     return@Runnable
                 }
                 processing = true
-                pointsToSpawn.forEachIndexed { pointIndex, point ->
+                val pointsIterator = pointsToSpawn.iterator()
+                var pointIndex = 0
+                while (pointsIterator.hasNext()) {
+                    val point = pointsIterator.next()
+                    val animation = point.frame.animation
                     val world = plugin.server.worlds.first()
                     val location = Location(world, point.x.toDouble(), point.y.toDouble(), point.z.toDouble())
+
+                    // spawn entities for new points that have a higher index than the previous highest one
                     if (pointIndex >= entities.size) {
                         // on spawn
                         world.spawn(location, TextDisplay::class.java) { entity ->
+                            entity.isPersistent =
+                                animation.shouldBeLeftInWorld == ShouldBeLeftInWorld.YES_AND_MAKE_PERSISTENT
                             entities.add(entity)
-                            entity.isPersistent = false
                             entity.billboard = Display.Billboard.CENTER
                             entity.backgroundColor = point.color.setAlpha(255)
                         }
@@ -77,9 +85,15 @@ object TextDisplayRenderer {
                             AxisAngle4f()
                         )
                     } catch (e: Exception) {
-                        plugin.logger.warning("TextDisplayRenderer error: $e")
+                        plugin.logger.warning("TextDisplayRenderer error @everyframe: ${e.stackTraceToString()}")
                         processing = false
                         return@Runnable
+                    }
+                    if (animation.shouldBeLeftInWorld != ShouldBeLeftInWorld.NO) {
+                        entities.remove(entity)
+                        pointsIterator.remove()
+                    } else {
+                        pointIndex++
                     }
                 }
 
@@ -97,7 +111,7 @@ object TextDisplayRenderer {
                 pointsToSpawn.clear()
 //                processing = false
             } catch (e: Exception) {
-                plugin.logger.warning("TextDisplayRenderer error: $e")
+                plugin.logger.warning("TextDisplayRenderer error: ${e.stackTraceToString()}")
             } finally {
                 processing = false
             }
@@ -117,11 +131,5 @@ object TextDisplayRenderer {
                 }
             }
         })
-    }
-
-
-    fun removeEntities() {
-        entities.forEach { it.remove() }
-        entities.clear()
     }
 }

@@ -34,7 +34,7 @@ class Animation(
         get() = location.world
 
 
-    private val reader = FastBufferedInputStream(FileInputStream(file), 1024 * 64)
+    private val reader = FastBufferedInputStream(FileInputStream(file))
 
     private var i = 0
 
@@ -90,6 +90,8 @@ class Animation(
             updateIfRepeating("randomRotationMode", value)
         }
 
+    var shouldBeLeftInWorld = ShouldBeLeftInWorld.NO
+
 //    var singleFrame: Frame? = null
 
     fun start() {
@@ -144,10 +146,9 @@ class Animation(
                 }
             }
 
-
             val frame: Frame
 
-            if (reader.available() < 14) { // length + at least 1 particle
+            if (reader.available() < 12) { // length + at least 1 particle
                 playing = false
                 Utils.sendDebugMessage("Animation $name buffer empty")
                 remove()
@@ -192,7 +193,7 @@ class Animation(
 
             return frame
         } catch (e: Exception) {
-            Sheepy.instance.logger.warning("Error reading $name, i: $i, error: $e")
+            Sheepy.instance.logger.warning("Error reading $name, i: $i, error: ${e.stackTrace}")
             return null
         }
     }

@@ -40,3 +40,9 @@ enum class RandomRotation {
 
 fun parseRandomRotation(string: String?): RandomRotation? = RandomRotation.entries.find { it.name == string }
 // todo generic enum parser
+
+enum class ShouldBeLeftInWorld {
+    NO,
+    YES,
+    YES_AND_MAKE_PERSISTENT
+}
